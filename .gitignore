@@ -15,7 +15,7 @@ zabbix-zabbix*.tar.gz
 *.srl
 *.psk
 # Ignore plugin caches
-plugins/httpapi/__pycache__
+__pycache__
 # Ignore test plays and inventories
 inv*.test.yml
 play*.test.yml
