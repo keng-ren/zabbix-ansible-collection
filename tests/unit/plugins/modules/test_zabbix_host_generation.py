@@ -13,6 +13,7 @@ from ansible_collections.zabbix.zabbix.tests.unit.plugins.modules.common import 
     AnsibleFailJson, TestModules, patch)
 from ansible_collections.zabbix.zabbix.plugins.module_utils.helper import (
     inventory_mode_types, snmp_authprotocol_types, snmp_privprotocol_types)
+from ansible_collections.zabbix.zabbix.plugins.module_utils.zabbix_api import (ZabbixApi)
 
 
 def mock_api_version(self):
@@ -57,14 +58,14 @@ class TestWOProcessing(TestModules):
 
             # Check test_data_1
             self.mock_module_functions.params = test_data_1
-            host = self.module.Host(self.mock_module_functions)
+            host = self.module.Host(self.mock_module_functions, ZabbixApi(self.mock_module_functions))
 
             result = host.generate_zabbix_host(exist_host)
             self.assertEqual(result, test_data_1)
 
             # Check test_data_2
             self.mock_module_functions.params = test_data_2
-            host = self.module.Host(self.mock_module_functions)
+            host = self.module.Host(self.mock_module_functions, ZabbixApi(self.mock_module_functions))
 
             result = host.generate_zabbix_host(exist_host)
             self.assertEqual(result, test_data_2)
@@ -81,6 +82,7 @@ class TestHostgroups(TestModules):
 
         Expected result: the resulting data equals the expected result.
         """
+
         def mock_find_zabbix_hostgroups_by_names(self, hostgroup_names):
             return [{'groupid': '2', 'name': 'Linux servers'}]
 
@@ -98,7 +100,7 @@ class TestHostgroups(TestModules):
                 'groups': [{'groupid': '2'}]}
 
             self.mock_module_functions.params = input_param
-            host = self.module.Host(self.mock_module_functions)
+            host = self.module.Host(self.mock_module_functions, ZabbixApi(self.mock_module_functions))
 
             result = host.generate_zabbix_host(exist_host)
             self.assertEqual(result, expected_result)
@@ -119,7 +121,7 @@ class TestHostgroups(TestModules):
                 'hostgroups': []}
 
             self.mock_module_functions.params = input_param
-            host = self.module.Host(self.mock_module_functions)
+            host = self.module.Host(self.mock_module_functions, ZabbixApi(self.mock_module_functions))
 
             with self.assertRaises(AnsibleFailJson) as ansible_result:
                 host.generate_zabbix_host()
@@ -142,7 +144,7 @@ class TestHostgroups(TestModules):
             input_param = {'host': 'test_host'}
 
             self.mock_module_functions.params = input_param
-            host = self.module.Host(self.mock_module_functions)
+            host = self.module.Host(self.mock_module_functions, ZabbixApi(self.mock_module_functions))
 
             with self.assertRaises(AnsibleFailJson) as ansible_result:
                 host.generate_zabbix_host()
@@ -168,7 +170,7 @@ class TestHostgroups(TestModules):
             expected_result = {'host': 'test_host'}
 
             self.mock_module_functions.params = input_param
-            host = self.module.Host(self.mock_module_functions)
+            host = self.module.Host(self.mock_module_functions, ZabbixApi(self.mock_module_functions))
 
             result = host.generate_zabbix_host(exist_host)
             self.assertEqual(result, expected_result)
@@ -199,7 +201,7 @@ class TestTemplates(TestModules):
                 'templates': []}
 
             self.mock_module_functions.params = input_param
-            host = self.module.Host(self.mock_module_functions)
+            host = self.module.Host(self.mock_module_functions, ZabbixApi(self.mock_module_functions))
 
             result = host.generate_zabbix_host(exist_host)
             self.assertEqual(result, expected_result)
@@ -211,6 +213,7 @@ class TestTemplates(TestModules):
 
         Expected result: the resulting data equals the expected result.
         """
+
         def mock_find_zabbix_templates_by_names(self, hostgroup_names):
             return [{'templateid': '2', 'name': 'Basic Linux'}]
 
@@ -228,7 +231,7 @@ class TestTemplates(TestModules):
                 'templates': [{'templateid': '2'}]}
 
             self.mock_module_functions.params = input_param
-            host = self.module.Host(self.mock_module_functions)
+            host = self.module.Host(self.mock_module_functions, ZabbixApi(self.mock_module_functions))
 
             result = host.generate_zabbix_host(exist_host)
             self.assertEqual(result, expected_result)
@@ -259,7 +262,7 @@ class TestProxy(TestModules):
                 'proxy_hostid': '0'}
 
             self.mock_module_functions.params = input_param
-            host = self.module.Host(self.mock_module_functions)
+            host = self.module.Host(self.mock_module_functions, ZabbixApi(self.mock_module_functions))
 
             result = host.generate_zabbix_host(exist_host)
             self.assertEqual(result, expected_result)
@@ -271,6 +274,7 @@ class TestProxy(TestModules):
 
         Expected result: the resulting data equals the expected result.
         """
+
         def mock_find_zabbix_proxy_by_names(self, hostgroup_names):
             return [{'proxyid': '2', 'name': 'Test Proxy'}]
 
@@ -288,7 +292,7 @@ class TestProxy(TestModules):
                 'proxy_hostid': '2'}
 
             self.mock_module_functions.params = input_param
-            host = self.module.Host(self.mock_module_functions)
+            host = self.module.Host(self.mock_module_functions, ZabbixApi(self.mock_module_functions))
 
             result = host.generate_zabbix_host(exist_host)
             self.assertEqual(result, expected_result)
@@ -300,6 +304,7 @@ class TestProxy(TestModules):
 
         Expected result: an exception.
         """
+
         def mock_find_zabbix_proxy_by_names(self, hostgroup_names):
             return []
 
@@ -314,7 +319,7 @@ class TestProxy(TestModules):
                 'proxy': 'Test Proxy'}
 
             self.mock_module_functions.params = input_param
-            host = self.module.Host(self.mock_module_functions)
+            host = self.module.Host(self.mock_module_functions, ZabbixApi(self.mock_module_functions))
 
             with self.assertRaises(AnsibleFailJson) as ansible_result:
                 host.generate_zabbix_host(exist_host)
@@ -348,7 +353,7 @@ class TestStatus(TestModules):
                 'status': '0'}
 
             self.mock_module_functions.params = input_param
-            host = self.module.Host(self.mock_module_functions)
+            host = self.module.Host(self.mock_module_functions, ZabbixApi(self.mock_module_functions))
 
             result = host.generate_zabbix_host(exist_host)
             self.assertEqual(result, expected_result)
@@ -373,7 +378,7 @@ class TestStatus(TestModules):
                 'status': '1'}
 
             self.mock_module_functions.params = input_param
-            host = self.module.Host(self.mock_module_functions)
+            host = self.module.Host(self.mock_module_functions, ZabbixApi(self.mock_module_functions))
 
             result = host.generate_zabbix_host(exist_host)
             self.assertEqual(result, expected_result)
@@ -403,7 +408,7 @@ class TestMacro(TestModules):
                 'macros': []}
 
             self.mock_module_functions.params = input_param
-            host = self.module.Host(self.mock_module_functions)
+            host = self.module.Host(self.mock_module_functions, ZabbixApi(self.mock_module_functions))
 
             result = host.generate_zabbix_host(exist_host)
             self.assertEqual(result, expected_result)
@@ -490,7 +495,7 @@ class TestMacro(TestModules):
                 ]}
 
             self.mock_module_functions.params = input_param
-            host = self.module.Host(self.mock_module_functions)
+            host = self.module.Host(self.mock_module_functions, ZabbixApi(self.mock_module_functions))
 
             result = host.generate_zabbix_host(exist_host)
             self.assertEqual(result, expected_result)
@@ -531,7 +536,7 @@ class TestIPMI(TestModules):
                     'ipmi_authtype': ipmi_authtype_test_cases[each]}
 
                 self.mock_module_functions.params = input_param
-                host = self.module.Host(self.mock_module_functions)
+                host = self.module.Host(self.mock_module_functions, ZabbixApi(self.mock_module_functions))
 
                 result = host.generate_zabbix_host(exist_host)
                 self.assertEqual(result, expected_result)
@@ -565,7 +570,7 @@ class TestIPMI(TestModules):
                     'ipmi_privilege': ipmi_privilege_test_cases[each]}
 
                 self.mock_module_functions.params = input_param
-                host = self.module.Host(self.mock_module_functions)
+                host = self.module.Host(self.mock_module_functions, ZabbixApi(self.mock_module_functions))
 
                 result = host.generate_zabbix_host(exist_host)
                 self.assertEqual(result, expected_result)
@@ -595,7 +600,7 @@ class TestTLS(TestModules):
             expected_result = {'host': 'test_host', 'tls_accept': '1'}
 
             self.mock_module_functions.params = input_param
-            host = self.module.Host(self.mock_module_functions)
+            host = self.module.Host(self.mock_module_functions, ZabbixApi(self.mock_module_functions))
 
             result = host.generate_zabbix_host(exist_host)
             self.assertEqual(result, expected_result)
@@ -617,7 +622,7 @@ class TestTLS(TestModules):
             expected_result = {'host': 'test_host', 'tls_connect': '1'}
 
             self.mock_module_functions.params = input_param
-            host = self.module.Host(self.mock_module_functions)
+            host = self.module.Host(self.mock_module_functions, ZabbixApi(self.mock_module_functions))
 
             result = host.generate_zabbix_host(exist_host)
             self.assertEqual(result, expected_result)
@@ -639,7 +644,7 @@ class TestTLS(TestModules):
             expected_result = {'host': 'test_host', 'tls_accept': '4'}
 
             self.mock_module_functions.params = input_param
-            host = self.module.Host(self.mock_module_functions)
+            host = self.module.Host(self.mock_module_functions, ZabbixApi(self.mock_module_functions))
 
             result = host.generate_zabbix_host(exist_host)
             self.assertEqual(result, expected_result)
@@ -661,7 +666,7 @@ class TestTLS(TestModules):
             expected_result = {'host': 'test_host', 'tls_connect': '4'}
 
             self.mock_module_functions.params = input_param
-            host = self.module.Host(self.mock_module_functions)
+            host = self.module.Host(self.mock_module_functions, ZabbixApi(self.mock_module_functions))
 
             result = host.generate_zabbix_host(exist_host)
             self.assertEqual(result, expected_result)
@@ -684,7 +689,7 @@ class TestTLS(TestModules):
             expected_result = {'host': 'test_host', 'tls_accept': '1'}
 
             self.mock_module_functions.params = input_param
-            host = self.module.Host(self.mock_module_functions)
+            host = self.module.Host(self.mock_module_functions, ZabbixApi(self.mock_module_functions))
 
             result = host.generate_zabbix_host(exist_host)
             self.assertEqual(result, expected_result)
@@ -707,7 +712,7 @@ class TestTLS(TestModules):
             expected_result = {'host': 'test_host', 'tls_connect': '1'}
 
             self.mock_module_functions.params = input_param
-            host = self.module.Host(self.mock_module_functions)
+            host = self.module.Host(self.mock_module_functions, ZabbixApi(self.mock_module_functions))
 
             result = host.generate_zabbix_host(exist_host)
             self.assertEqual(result, expected_result)
@@ -738,7 +743,7 @@ class TestTLS(TestModules):
                     'tls_connect': '1'}
 
                 self.mock_module_functions.params = input_param
-                host = self.module.Host(self.mock_module_functions)
+                host = self.module.Host(self.mock_module_functions, ZabbixApi(self.mock_module_functions))
 
                 result = host.generate_zabbix_host(exist_host)
                 self.assertEqual(result, expected_result)
@@ -751,7 +756,7 @@ class TestTLS(TestModules):
                     'tls_connect': each}
 
                 self.mock_module_functions.params = input_param
-                host = self.module.Host(self.mock_module_functions)
+                host = self.module.Host(self.mock_module_functions, ZabbixApi(self.mock_module_functions))
 
                 result = host.generate_zabbix_host(exist_host)
                 self.assertEqual(result, expected_result)
@@ -782,7 +787,7 @@ class TestTLS(TestModules):
                     'tls_connect': '1'}
 
                 self.mock_module_functions.params = input_param
-                host = self.module.Host(self.mock_module_functions)
+                host = self.module.Host(self.mock_module_functions, ZabbixApi(self.mock_module_functions))
 
                 result = host.generate_zabbix_host(exist_host)
                 self.assertEqual(result, expected_result)
@@ -795,7 +800,7 @@ class TestTLS(TestModules):
                     'tls_connect': each}
 
                 self.mock_module_functions.params = input_param
-                host = self.module.Host(self.mock_module_functions)
+                host = self.module.Host(self.mock_module_functions, ZabbixApi(self.mock_module_functions))
 
                 result = host.generate_zabbix_host(exist_host)
                 self.assertEqual(result, expected_result)
@@ -831,7 +836,7 @@ class TestTLS(TestModules):
                     'tls_connect': '1'}
 
                 self.mock_module_functions.params = input_param
-                host = self.module.Host(self.mock_module_functions)
+                host = self.module.Host(self.mock_module_functions, ZabbixApi(self.mock_module_functions))
 
                 result = host.generate_zabbix_host(exist_host)
                 self.assertEqual(result, expected_result)
@@ -844,7 +849,7 @@ class TestTLS(TestModules):
                     'tls_connect': each}
 
                 self.mock_module_functions.params = input_param
-                host = self.module.Host(self.mock_module_functions)
+                host = self.module.Host(self.mock_module_functions, ZabbixApi(self.mock_module_functions))
 
                 result = host.generate_zabbix_host(exist_host)
                 self.assertEqual(result, expected_result)
@@ -880,7 +885,7 @@ class TestTLS(TestModules):
                     'tls_connect': '1'}
 
                 self.mock_module_functions.params = input_param
-                host = self.module.Host(self.mock_module_functions)
+                host = self.module.Host(self.mock_module_functions, ZabbixApi(self.mock_module_functions))
 
                 result = host.generate_zabbix_host(exist_host)
                 self.assertEqual(result, expected_result)
@@ -893,7 +898,7 @@ class TestTLS(TestModules):
                     'tls_connect': each}
 
                 self.mock_module_functions.params = input_param
-                host = self.module.Host(self.mock_module_functions)
+                host = self.module.Host(self.mock_module_functions, ZabbixApi(self.mock_module_functions))
 
                 result = host.generate_zabbix_host(exist_host)
                 self.assertEqual(result, expected_result)
@@ -945,7 +950,7 @@ class TestTLS(TestModules):
                         'host': 'test_host',
                         'tls_accept': each['output']}
                     self.mock_module_functions.params = input_param
-                    host = self.module.Host(self.mock_module_functions)
+                    host = self.module.Host(self.mock_module_functions, ZabbixApi(self.mock_module_functions))
 
                     result = host.generate_zabbix_host(exist_host)
                     self.assertEqual(result, expected_result)
@@ -971,7 +976,7 @@ class TestTLS(TestModules):
                             'tls_psk_identity': 'test_tls_psk_identity',
                             'tls_psk': 'test_tls_psk'}
                         self.mock_module_functions.params = input_param
-                        host = self.module.Host(self.mock_module_functions)
+                        host = self.module.Host(self.mock_module_functions, ZabbixApi(self.mock_module_functions))
 
                         result = host.generate_zabbix_host(exist_host)
                         self.assertEqual(result, expected_result)
@@ -1019,7 +1024,7 @@ class TestTLS(TestModules):
                         'host': 'test_host',
                         'tls_connect': each['output']}
                     self.mock_module_functions.params = input_param
-                    host = self.module.Host(self.mock_module_functions)
+                    host = self.module.Host(self.mock_module_functions, ZabbixApi(self.mock_module_functions))
 
                     result = host.generate_zabbix_host(exist_host)
                     self.assertEqual(result, expected_result)
@@ -1045,7 +1050,7 @@ class TestTLS(TestModules):
                             'tls_psk_identity': 'test_tls_psk_identity',
                             'tls_psk': 'test_tls_psk'}
                         self.mock_module_functions.params = input_param
-                        host = self.module.Host(self.mock_module_functions)
+                        host = self.module.Host(self.mock_module_functions, ZabbixApi(self.mock_module_functions))
 
                         result = host.generate_zabbix_host(exist_host)
                         self.assertEqual(result, expected_result)
@@ -1085,7 +1090,7 @@ class TestTLS(TestModules):
 
                     for each in test_cases:
                         self.mock_module_functions.params = each
-                        host = self.module.Host(self.mock_module_functions)
+                        host = self.module.Host(self.mock_module_functions, ZabbixApi(self.mock_module_functions))
 
                         with self.assertRaises(AnsibleFailJson) as ansible_result:
                             host.generate_zabbix_host(exist_host)
@@ -1127,7 +1132,7 @@ class TestInventory(TestModules):
                         'inventory': {'type': 1, 'type_full': 2}}
 
                     self.mock_module_functions.params = input_param
-                    host = self.module.Host(self.mock_module_functions)
+                    host = self.module.Host(self.mock_module_functions, ZabbixApi(self.mock_module_functions))
                     host.inventory_links = {}
 
                     result = host.generate_zabbix_host(exist_host)
@@ -1158,7 +1163,7 @@ class TestInventory(TestModules):
                     'inventory_mode': inventory_mode_types.get('disabled')}
 
                 self.mock_module_functions.params = input_param
-                host = self.module.Host(self.mock_module_functions)
+                host = self.module.Host(self.mock_module_functions, ZabbixApi(self.mock_module_functions))
                 host.inventory_links = {}
 
                 result = host.generate_zabbix_host(exist_host)
@@ -1188,7 +1193,7 @@ class TestInventory(TestModules):
                         'items': {'name': 'test', 'inventory_link': '0'}}
 
                     self.mock_module_functions.params = input_param
-                    host = self.module.Host(self.mock_module_functions)
+                    host = self.module.Host(self.mock_module_functions, ZabbixApi(self.mock_module_functions))
                     host.inventory_links = {}
 
                     with self.assertRaises(AnsibleFailJson) as ansible_result:
@@ -1226,7 +1231,7 @@ class TestInventory(TestModules):
                     'items': {'name': 'test', 'inventory_link': '0'}}
 
                 self.mock_module_functions.params = input_param
-                host = self.module.Host(self.mock_module_functions)
+                host = self.module.Host(self.mock_module_functions, ZabbixApi(self.mock_module_functions))
                 host.inventory_links = {}
 
                 with self.assertRaises(AnsibleFailJson) as ansible_result:
@@ -1246,7 +1251,7 @@ class TestInventory(TestModules):
                 'items': {'name': 'test', 'inventory_link': '0'}}
 
             self.mock_module_functions.params = input_param
-            host = self.module.Host(self.mock_module_functions)
+            host = self.module.Host(self.mock_module_functions, ZabbixApi(self.mock_module_functions))
             host.inventory_links = {}
 
             with self.assertRaises(AnsibleFailJson) as ansible_result:
@@ -1281,7 +1286,7 @@ class TestInventory(TestModules):
                     'items': {'name': 'test', 'inventory_link': '1'}}
 
                 self.mock_module_functions.params = input_param
-                host = self.module.Host(self.mock_module_functions)
+                host = self.module.Host(self.mock_module_functions, ZabbixApi(self.mock_module_functions))
                 host.inventory_links = {'type': 'test'}
 
                 with self.assertRaises(AnsibleFailJson) as ansible_result:
@@ -1396,7 +1401,7 @@ class TestInterfaces(TestModules):
                     'interfaces': case['expected']}
 
                 self.mock_module_functions.params = input_param
-                host = self.module.Host(self.mock_module_functions)
+                host = self.module.Host(self.mock_module_functions, ZabbixApi(self.mock_module_functions))
                 self.maxDiff = None
 
                 result = host.generate_zabbix_host(exist_host)
@@ -1434,7 +1439,7 @@ class TestInterfaces(TestModules):
                 'interfaces': input_data}
 
             self.mock_module_functions.params = input_param
-            host = self.module.Host(self.mock_module_functions)
+            host = self.module.Host(self.mock_module_functions, ZabbixApi(self.mock_module_functions))
 
             with self.assertRaises(AnsibleFailJson) as ansible_result:
                 host.generate_zabbix_host(exist_host)
@@ -1706,7 +1711,7 @@ class TestInterfaces(TestModules):
                     'interfaces': test_case['input']}
 
                 self.mock_module_functions.params = input_param
-                host = self.module.Host(self.mock_module_functions)
+                host = self.module.Host(self.mock_module_functions, ZabbixApi(self.mock_module_functions))
 
                 with self.assertRaises(AnsibleFailJson) as ansible_result:
                     host.generate_zabbix_host(exist_host)
@@ -1812,7 +1817,7 @@ class TestInterfaces(TestModules):
                     'interfaces': case['expected']}
 
                 self.mock_module_functions.params = input_param
-                host = self.module.Host(self.mock_module_functions)
+                host = self.module.Host(self.mock_module_functions, ZabbixApi(self.mock_module_functions))
                 self.maxDiff = None
 
                 result = host.generate_zabbix_host(exist_host)
@@ -1835,6 +1840,7 @@ class TestInterfaces(TestModules):
 
         Expected result: all test cases ran successfully.
         """
+
         def mock_api_version_64(self):
             return ('6.4.5')
 
@@ -1881,7 +1887,7 @@ class TestInterfaces(TestModules):
                     'interfaces': case['expected']}
 
                 self.mock_module_functions.params = input_param
-                host = self.module.Host(self.mock_module_functions)
+                host = self.module.Host(self.mock_module_functions, ZabbixApi(self.mock_module_functions))
                 self.maxDiff = None
 
                 result = host.generate_zabbix_host(exist_host)
@@ -1952,7 +1958,7 @@ class TestInterfaces(TestModules):
                     'interfaces': case['expected']}
 
                 self.mock_module_functions.params = input_param
-                host = self.module.Host(self.mock_module_functions)
+                host = self.module.Host(self.mock_module_functions, ZabbixApi(self.mock_module_functions))
                 self.maxDiff = None
 
                 result = host.generate_zabbix_host(exist_host)
@@ -1975,6 +1981,7 @@ class TestInterfaces(TestModules):
 
         Expected result: all test cases run successfully.
         """
+
         def mock_api_version_64(self):
             return ('6.4.5')
 
@@ -2030,7 +2037,7 @@ class TestInterfaces(TestModules):
                     'interfaces': case['expected']}
 
                 self.mock_module_functions.params = input_param
-                host = self.module.Host(self.mock_module_functions)
+                host = self.module.Host(self.mock_module_functions, ZabbixApi(self.mock_module_functions))
                 self.maxDiff = None
 
                 result = host.generate_zabbix_host(exist_host)
@@ -2108,7 +2115,7 @@ class TestInterfaces(TestModules):
                         'authprotocol'] = snmp_authprotocol_types[authprotocol]
 
                     self.mock_module_functions.params = input_param
-                    host = self.module.Host(self.mock_module_functions)
+                    host = self.module.Host(self.mock_module_functions, ZabbixApi(self.mock_module_functions))
                     self.maxDiff = None
 
                     result = host.generate_zabbix_host(exist_host)
@@ -2187,7 +2194,7 @@ class TestInterfaces(TestModules):
                         expected_result['interfaces'][0]['details']['privprotocol'] = snmp_privprotocol_types[privprotocol]
 
                         self.mock_module_functions.params = input_param
-                        host = self.module.Host(self.mock_module_functions)
+                        host = self.module.Host(self.mock_module_functions, ZabbixApi(self.mock_module_functions))
                         self.maxDiff = None
 
                         result = host.generate_zabbix_host(exist_host)
@@ -2267,7 +2274,7 @@ class TestInterfaces(TestModules):
                     'host': 'test_host',
                     'interfaces': case}
                 self.mock_module_functions.params = input_param
-                host = self.module.Host(self.mock_module_functions)
+                host = self.module.Host(self.mock_module_functions, ZabbixApi(self.mock_module_functions))
 
                 with self.assertRaises(AnsibleFailJson) as ansible_result:
                     host.generate_zabbix_host(exist_host)

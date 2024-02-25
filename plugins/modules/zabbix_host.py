@@ -452,9 +452,9 @@ from ansible_collections.zabbix.zabbix.plugins.module_utils.helper import (
 
 class Host(object):
 
-    def __init__(self, module):
+    def __init__(self, module, zapi):
         self.module = module
-        self.zapi = ZabbixApi(module)
+        self.zapi = zapi
         self.zbx_api_version = self.zapi.api_version()
 
     def get_zabbix_host(self, hostid):
@@ -1108,7 +1108,7 @@ def main():
     state = module.params['state']
     host_name = module.params['host']
 
-    host = Host(module)
+    host = Host(module, ZabbixApi(module))
 
     # Find a host in Zabbix
     result = host.zapi.find_zabbix_host_by_host(host_name)
