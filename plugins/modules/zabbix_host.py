@@ -42,17 +42,64 @@ options:
         description: Visible host name
         type: str
         aliases: [ visible_name ]
+    update_strategy:
+        description: 
+            - Controls how host properties O(hostgroups), O(templates), O(macros), and O(interfaces) are updated.
+        type: dict
+        suboptions:
+            hostgroups:
+                description:                
+                    - How the host's host group membership should be modified.
+                    - If V(replace), all host groups that are not listed in the task will be unlinked.
+                    - If V(merge), host groups listed in the task will be linked to the host if not already linked. 
+                    - If V(delete), all host groups listed in the task will be unlinked from the host.
+                    - For V(merge) and V(delete) strategies, any existing host groups not linked in the task will be unaffected.
+                type: str
+                default: replace
+                choices: [ replace, merge, delete ]
+            templates:
+                description:
+                    - How the host's linked templates should be modified.
+                    - If V(replace), all templates that are not listed in the task will be unlinked.
+                    - If V(merge), templates listed in the task will be linked to the host if not already linked. 
+                    - If V(delete), all templates listed in the task will be unlinked from the host.
+                    - For V(merge) and V(delete) strategies, any existing templates not linked in the task will be unaffected.
+                type: str
+                default: replace
+                choices: [ replace, merge, delete ]
+            macros:
+                description:
+                    - How the host's macros should be modified.
+                    - If V(replace), all host macros that are not listed in the task will be removed.
+                    - If V(merge), macros listed in the task will be linked to the host if not already linked. 
+                    - If V(delete), all host macros listed in the task will be removed from the host.
+                    - For V(merge) and V(delete) strategies, any existing host macros not linked in the task will be unaffected.
+                type: str
+                default: replace
+                choices: [ replace, merge, delete ]
+            interfaces:
+                description:
+                    - How the host's interfaces should be modified.
+                    - If V(replace), all host interfaces that are not listed in the task will be removed.
+                    - If V(merge), host interfaces listed in the task will be added to the host or merged with the existing host interfaces.
+                    - If V(delete), all host interfaces listed in the task will be removed from the host.
+                    - For V(merge) and V(delete) strategies, any existing host interfaces not linked in the task will be unaffected.
+                type: str
+                default: replace
+                choices: [ replace, merge, delete ]
     hostgroups:
         description:
-            - Host groups to replace the current host groups the host belongs to.
-            - All host groups that are not listed in the task will be unlinked.
+            - Host groups that will be applied to the host.
+            - By default, all host groups that are not listed in the task will be unlinked.
+            - See O(update_strategy) for how to control this behavior.
         type: list
         elements: str
-        aliases: [ host_group, host_groups ]
+        aliases: [ host_group, host_groups ]     
     templates:
         description:
-            - Templates to replace the currently linked templates.
-            - All templates that are not listed in the task will be unlinked.
+            - Templates that will be applied to the host.
+            - By default, all templates that are not listed in the task will be unlinked.
+            - See O(update_strategy) for how to control this behavior.
         type: list
         elements: str
         aliases: [ link_templates, host_templates, template ]
@@ -78,12 +125,13 @@ options:
                 description: Host tag value.
                 type: str
                 default: ''
-        aliases: [ host_tags ]
+        aliases: [ host_tags ]    
     macros:
         description:
-            - User macros to replace the current user macros.
-            - All macros that are not listed in the task will be removed.
+            - User macros that will be applied to the host.
+            - By default, all macros that are not listed in the task will be removed.
             - If a secret macro is specified, the host will be updated every time the task is run.
+            - See O(update_strategy) for how to control this behavior.
         type: list
         elements: dict
         suboptions:
@@ -178,9 +226,10 @@ options:
         type: list
         elements: dict
         description:
-            - Host interfaces to replace the current host interfaces.
+            - Host interfaces that will be applied to the host.
             - Only one interface of each type is supported.
-            - All interfaces that are not listed in the request will be removed.
+            - By default, all host interfaces that are not listed in the task will be removed.
+            - See O(update_strategy) for how to control this behavior.
         suboptions:
             type:
                 type: str
@@ -195,7 +244,8 @@ options:
                 type: str
                 description:
                     - IP address used by the interface.
-                    - Can be empty if the connection is made through DNS.
+                    - Can be empty if the connection is made through DNS, otherwise is converted to loopback address.
+                    - If O(update_strategy=merge), the loopback conversion will not be performed if value is empty. 
                 default: ''
             dns:
                 type: str
@@ -209,6 +259,7 @@ options:
                 description:
                     - Port number used by the interface.
                     - Can contain user macros.
+                    - If V(None), will be set to the default port number for the O(type), except if O(update_strategy=merge) is set.
             details:
                 description:
                     - Additional details object for interface.
@@ -405,11 +456,66 @@ EXAMPLES = r'''
     ansible_user: Admin
     ansible_httpapi_pass: zabbix
 
+# To update only one nested parameter, you can specify 
+# either the hostname or hostid,  the desired parameter
+# (and its ancestors), and the update strategy.
+# The rest of the host parameters will not be changed.
+# If the given parameter does not exist on the host,
+# an attempt will be made to create it, subject to 
+# all the requirements for that parameter.
+- name: Update host interface
+  zabbix.zabbix.zabbix_host:
+    hostid: {{ hostvars['hostid'] }}
+    update_strategy:
+      interfaces: merge
+    interfaces:
+      - type: snmp
+        ip: 10.10.10.5
+        details:
+          version: 2
+  vars:
+    ansible_network_os: zabbix.zabbix.zabbix
+    ansible_connection: httpapi
+    ansible_user: Admin
+    ansible_httpapi_pass: zabbix
+
 # To remove a host, you can use:
 - name: Delete host
   zabbix.zabbix.zabbix_host:
     state: absent
     host: Example host
+  vars:
+    ansible_network_os: zabbix.zabbix.zabbix
+    ansible_connection: httpapi
+    ansible_user: Admin
+    ansible_httpapi_pass: zabbix
+
+# To remove an particular hotsgroup from a host, but
+# leave all others unaffected, use the delete update
+# strategy.
+- name: Remove hostgroup from host
+  zabbix.zabbix.zabbix_host:
+    host: Example host
+    update_strategy: 
+      hostgroups: delete
+    hostgroups:
+      - Defunct hosts
+  vars:
+    ansible_network_os: zabbix.zabbix.zabbix
+    ansible_connection: httpapi
+    ansible_user: Admin
+    ansible_httpapi_pass: zabbix
+
+# To remove an particular interface from a host without
+# affecting any others, use the delete update
+# strategy.
+- name: Remove host interface from host
+  zabbix.zabbix.zabbix_host:
+    host: Example host
+    update_strategy:
+      interfaces: delete
+    interfaces:
+      - type: jmx
   vars:
     ansible_network_os: zabbix.zabbix.zabbix
     ansible_connection: httpapi
@@ -468,12 +574,37 @@ from ansible_collections.zabbix.zabbix.plugins.module_utils.helper import (
     snmp_authprotocol_types, snmp_privprotocol_types, Zabbix_version, snmp_parameters)
 
 
+def validate_arg(ans_module, check_values, obj, key):
+    """
+    Check that the value of the property 'key' of obj exists in values 
+    and fail if not.
+    """
+    if obj[key] is not None and check_values.get(
+            obj[key]) is None:
+        ans_module.fail_json(
+            msg="Invalid argument for {0}: {1}".format(
+                key,
+                obj[key]
+            ))
+
+
 class Host(object):
 
     def __init__(self, module, zapi):
         self.module = module
         self.zapi = zapi
         self.zbx_api_version = self.zapi.api_version()
+        # Prepare the update strategies
+        if self.module.params.get('update_strategy') is None:
+            self.module.params['update_strategy'] = {}
+        if self.module.params['update_strategy'].get('hostgroups') is None:
+            self.module.params['update_strategy']['hostgroups'] = 'replace'
+        if self.module.params['update_strategy'].get('templates') is None:
+            self.module.params['update_strategy']['templates'] = 'replace'
+        if self.module.params['update_strategy'].get('macros') is None:
+            self.module.params['update_strategy']['macros'] = 'replace'
+        if self.module.params['update_strategy'].get('interfaces') is None:
+            self.module.params['update_strategy']['interfaces'] = 'replace'
 
     def get_zabbix_host(self, hostid):
         """
@@ -623,13 +754,38 @@ class Host(object):
 
         # host groups
         if self.module.params.get('hostgroups') is not None:
+            strategy = self.module.params['update_strategy']['hostgroups']
+
             # Check host groups for empty
-            if len(self.module.params.get('hostgroups')) == 0:
+            if len(self.module.params['hostgroups']) == 0:
                 self.module.fail_json(
                     msg="Cannot remove all host groups from a host")
+
             # Get existing groups from Zabbix
-            groups = self.zapi.find_zabbix_hostgroups_by_names(
-                self.module.params['hostgroups'])
+            groups_search = None
+            if exist_host is not None and exist_host.get('groups') is not None:
+                if len(exist_host['groups']) == 0:
+                    # TODO: Reload host ?
+                    self.module.fail_json(
+                        msg="Existing host has no groups!")
+
+                if strategy == 'merge':
+                    groups_search = list(
+                        set(exist_host['groups'])
+                        + set(self.module.params['hostgroups']))
+                elif strategy == 'delete':
+                    groups_search = list(
+                        set(exist_host['groups'])
+                        - set(self.module.params['hostgroups']))
+                    if len(groups_search) == 0:
+                        self.module.fail_json(
+                            msg="Cannot remove all host groups from a host")
+
+            if groups_search is None:
+                groups_search = self.module.params['hostgroups']
+
+            groups = self.zapi.find_zabbix_hostgroups_by_names(groups_search)
+
             if self.check_elements(
                     self.module.params['hostgroups'],
                     [g['name'] for g in groups]):
@@ -642,15 +798,33 @@ class Host(object):
 
         # templates
         if self.module.params.get('templates') is not None:
+            strategy = self.module.params['update_strategy']['templates']
             host_params['templates'] = []
-            if len(self.module.params.get('templates')) != 0:
-                templates = self.zapi.find_zabbix_templates_by_names(
-                    self.module.params['templates'])
-                if self.check_elements(
-                        self.module.params['templates'],
-                        [t['name'] for t in templates]):
-                    templ = [{'templateid': t['templateid']} for t in templates]
-                    host_params['templates'] = templ
+            templates_search = None
+            if (len(self.module.params['templates']) != 0
+                    and exist_host is not None
+                    and exist_host.get('templates') is not None):
+                if strategy == 'merge':
+                    templates_search = list(
+                        set(exist_host['templates'])
+                        + set(self.module.params['templates']))
+                elif strategy == 'delete':
+                    templates_search = list(
+                        set(exist_host['templates'])
+                        - set(self.module.params['templates']))
+
+            if templates_search is None:
+                templates_search = self.module.params['templates']
+
+            templates = self.zapi.find_zabbix_templates_by_names(
+                templates_search)
+
+            if self.check_elements(
+                    self.module.params['templates'],
+                    [t['name'] for t in templates]):
+                template_ids = [{'templateid': t['templateid']}
+                                for t in templates]
+                host_params['templates'] = template_ids
 
         # proxy
         if self.module.params.get('proxy') is not None:
@@ -676,13 +850,46 @@ class Host(object):
         # macros
         if self.module.params.get('macros') is not None:
             host_params['macros'] = []
-            for each in self.module.params.get('macros'):
+            strategy = self.module.params['update_strategy']['macros']
+
+            for each in self.module.params['macros']:
                 macro = {
                     'macro': self.check_macro_name(each['macro']),
-                    'value': each['value'],
+                    'value': each.get('value'),
                     'type': macro_types.get(each['type']),
-                    'description': each['description']}
-                host_params['macros'].append(macro)
+                    'description': each.get('description'),
+                }
+
+                exist_macro = None
+                if (exist_host is not None
+                        and exist_host.get('macros') is not None):
+                    if strategy == 'merge':
+                        for macro_search in exist_host['macros']:
+                            if macro_search['macro'] == macro['macro']:
+                                exist_macro = macro_search
+                        if exist_macro is not None:
+                            merged_macro = {}
+                            merged_macro['macro'] = macro['macro']
+                            if macro.get('value') is not None:
+                                merged_macro['value'] = macro['value']
+                            if macro.get('type') is not None:
+                                merged_macro['type'] = macro['type']
+                            if macro.get('description') is not None:
+                                merged_macro['description'] = macro[
+                                    'description']
+                            host_params['macros'].append(merged_macro)
+                    elif strategy == 'delete':
+                        host_params['macros'] = list(
+                            set(exist_host['macros'])
+                            - set(self.module.params['macros']))
+                        continue
+                # Fallback if merge did not happen
+                if strategy == 'replace' or exist_macro is None:
+                    if macro['type'] is None:
+                        self.module.fail_json(
+                            msg="Unknown macro type: {0}".format(each['type']))
+                    host_params['macros'].append(macro)
+                    continue
 
         # IPMI
         if self.module.params.get('ipmi_authtype') is not None:
@@ -750,13 +957,15 @@ class Host(object):
         if self.module.params.get('inventory') is not None:
             if future_inventory_mode == '-1':
                 self.module.fail_json(
-                    msg="Inventory parameters not applicable. {0}".format(inventory_disable_reason_msg))
+                    msg="Inventory parameters not applicable. {0}".format(
+                        inventory_disable_reason_msg))
             inventory = {}
             param_inventory = self.module.params.get('inventory')
             for each in param_inventory:
                 if each in inventory_fields.values():
-                    if (future_inventory_mode == '1' and hasattr(self, 'inventory_links') and
-                            each in self.inventory_links):
+                    if (future_inventory_mode == '1'
+                            and hasattr(self, 'inventory_links')
+                            and each in self.inventory_links):
                         self.module.fail_json(
                             msg="Inventory field '{0}' is already linked to the item '{1}' and cannot be updated".format(
                                 each, self.inventory_links[each]))
@@ -771,106 +980,286 @@ class Host(object):
 
         # interface
         if self.module.params.get('interfaces') is not None:
+            # TODO: host_params['interfaces'] = self.ihelper.generate_interfaces(
+            # TODO:     self.module.params['interfaces'],
+            # TODO:     exist_host.get('interfaces'))
+            strategy = self.module.params['update_strategy']['interfaces']
             host_params['interfaces'] = []
-            interface_by_type = dict((k, []) for k in interface_types)
+            # Count of the created interfaces by type, but we will only
+            # ever have one of each.
+            interface_by_type = dict((k, 0) for k in interface_types)
             for each in self.module.params.get('interfaces'):
-                interface = {}
-                # resolve_type
-                interface['type'] = interface_types.get(each['type'])
-                interface['main'] = '1'
-                interface['useip'] = '1' if each['useip'] else '0'
-                # ip
-                if (each['useip'] is True and (each['ip'] is None or len(each['ip']) == 0)):
-                    interface['ip'] = '127.0.0.1'
-                else:
-                    interface['ip'] = each['ip']
-                # DNS
-                if (each['useip'] is False and (each['dns'] is None or len(each['dns']) == 0)):
-                    self.module.fail_json(msg="Required parameter not found: dns")
-                else:
-                    interface['dns'] = each['dns']
-                # ports
-                if each['port'] is not None:
-                    interface['port'] = each['port']
-                else:
-                    interface['port'] = default_values['ports'][each['type']]
-                # SNMP
-                details = []
-                if each['type'] == 'snmp':
-                    # Check the required fields for SNMP
-                    if each['details'] is None:
-                        self.module.fail_json(msg="Required parameter for SNMP interface not found: details")
-                    if each['details']['version'] is None:
-                        self.module.fail_json(msg="Required parameter not found: version")
-                    if each['details']['version'] in ['1', '2']:
-                        req_parameters = snmp_parameters[each['details']['version']]
-                    else:
-                        if each['details']['securitylevel'] is None:
-                            self.module.fail_json(msg="Required parameter not found: securitylevel")
-                        req_parameters = snmp_parameters[each['details']['version']][each['details']['securitylevel']]
-
-                    # If additional fields need to be added and some logic is required, then this can be done here.
-                    # If the new field only depends on the version, then it must be added to the helper.
-                    if each['details']['version'] in ['2', '3'] and (Zabbix_version(self.zbx_api_version) >= Zabbix_version('6.4.0')):
-                        req_parameters.append('max_repetitions')
-
-                    input_arguments = [e for e in each['details'] if each['details'][e] is not None]
-                    more_parameters = list(set(input_arguments) - set(req_parameters))
-                    less_parameters = list(set(req_parameters) - set(input_arguments))
-                    if more_parameters:
-                        self.module.fail_json(msg="Incorrect arguments for SNMPv{0}: {1}".format(
-                            each['details']['version'],
-                            ', '.join(more_parameters)))
-                    if less_parameters:
-                        self.module.fail_json(msg="Required parameter not found for SNMPv{0}: {1}".format(
-                            each['details']['version'],
-                            ', '.join(less_parameters)))
-
-                    details = {}
-                    # v1 and v2c
-                    details['version'] = each['details']['version']
-                    details['bulk'] = '1' if each['details']['bulk'] else '0'
-                    # Only for Zabbix versions above 6.4
-                    if Zabbix_version(self.zbx_api_version) >= Zabbix_version('6.4.0'):
-                        if details['version'] == '2' or details['version'] == '3':
-                            details['max_repetitions'] = each['details']['max_repetitions']
-                    # v3
-                    if details['version'] == '3':
-                        details['contextname'] = each['details']['contextname']
-                        details['securityname'] = each['details']['securityname']
-                        details['securitylevel'] = snmp_securitylevel_types[each['details']['securitylevel']]
-                        details['authprotocol'] = '0'
-                        details['authpassphrase'] = ''
-                        details['privprotocol'] = '0'
-                        details['privpassphrase'] = ''
-                        # authNoPriv
-                        if details['securitylevel'] in ['1', '2']:
-                            details['authprotocol'] = snmp_authprotocol_types[each['details']['authprotocol']]
-                            details['authpassphrase'] = each['details']['authpassphrase']
-                        # authPriv
-                        if details['securitylevel'] == '2':
-                            details['privprotocol'] = snmp_privprotocol_types[each['details']['privprotocol']]
-                            details['privpassphrase'] = each['details']['privpassphrase']
-                    else:
-                        details['community'] = each['details']['community']
-
-                interface['details'] = details
-
-                interface_by_type[each['type']].append(interface)
-
-            # Check count of interfaces
-            for interface in interface_by_type:
-                if len(interface_by_type[interface]) == 0:
-                    continue
-                if len(interface_by_type[interface]) > 1:
-                    # If more than 1 interface of any type is specified in task
+                if interface_by_type[each['type']] != 0:
+                    # Fail fast
                     self.module.fail_json(
-                        msg="{0} {1} interfaces defined in the task. Module supports only 1 interface of each type.".format(
-                            len(interface_by_type[interface]), interface))
-                else:
-                    host_params['interfaces'].extend(interface_by_type[interface])
+                        msg=''.join([
+                            "Detected {0} ".format(each['type']),
+                            "interface already defined in the task. ",
+                            "Module supports only 1 interface of each type. ",
+                            "Please resolve conflict manually."]))
+                exist_interface = None
+                interface = None
+                if (exist_host is not None
+                        and exist_host.get('interfaces') is not None):
+                    exist_interfaces = [i for i in exist_host['interfaces']
+                                        if (interface_types[each['type']]
+                                            == i['type'])]
+                    if len(exist_interfaces) == 1:
+                        exist_interface = exist_interfaces[0]
+                    elif len(exist_interfaces) > 1:
+                        # Courtesy to the user
+                        self.module.fail_json(
+                            msg=''.join([
+                                "Possible db corruption, found ",
+                                "{0} interfaces for type {1}".format(
+                                    len(exist_interface),
+                                    interface_types[each['type']])]))
+                if exist_interface is not None:
+                    if strategy == 'merge':
+                        interface = {}
+                        for o in ['main', 'useip']:
+                            if each.get(o) is not None:
+                                interface[o] = '1' if each[o] else '0'
+                            elif exist_interface.get(o) is not None:
+                                interface[o] = exist_interface[o]
+
+                        for o in ['ip', 'dns', 'port']:
+                            for det in [each, exist_interface]:
+                                if det.get(o) is not None and det[o]:
+                                    interface[o] = det[o]
+                                    break
+                    elif strategy == 'delete':
+                        continue
+                if strategy == 'replace' or interface is None:
+                    interface = {}
+                    # resolve type
+                    interface['type'] = interface_types[each['type']]
+                    interface['main'] = '1' if (each.get('main') is None
+                                                or each.get('main')) else '0'
+                    interface['useip'] = '1' if each.get('useip') else '0'
+                    # ip
+                    if (each['useip']
+                            and (each.get('ip') is None or not each.get('ip'))):
+                        interface['ip'] = '127.0.0.1'
+                    else:
+                        if each.get('ip') is not None:
+                            interface['ip'] = each['ip']
+                    # DNS
+                    if (not each['useip']
+                            and (each.get('dns') is None or not each.get('dns'))):
+                        self.module.fail_json(
+                            msg="Required parameter not found: dns")
+                    else:
+                        if each.get('dns') is not None:
+                            interface['dns'] = each['dns']
+                    # ports
+                    if each['port'] is not None:
+                        interface['port'] = each['port']
+                    else:
+                        interface['port'] = default_values[
+                            'ports'][each['type']]
+                # SNMP
+                if each['type'] == 'snmp':
+                    self.generate_snmp_details(
+                        strategy, each, interface, exist_interface)
+                if interface.get('details') is None:
+                    interface['details'] = []
+                if exist_interface is not None:
+                    interface['interfaceid'] = exist_interface['interfaceid']
+                host_params['interfaces'].append(interface)
+                interface_by_type[each['type']] = 1
 
         return host_params
+
+    def generate_snmp_details(
+            self, strategy, given_interface, target_interface,
+            exist_interface=None):
+        """
+        The function generates the desired SNMP interface details 
+        parameters based on the module parameters.
+        The returned dictionary can be used to create a host, as well 
+        as to compare with an existing host.
+
+        :param exist_host: parameters of existing Zabbix host
+        :type exist_host: dict
+
+        :rtype: dict
+        :return: parameters of desired host
+
+        note::
+            *  The 'exist_host' parameter is used to determine the 
+                current encryption, inventory, and host group settings 
+                on existing host.
+        """
+        given_details = given_interface.get('details')
+        exist_details = None
+        target_details = None
+        if exist_interface is not None:
+            exist_details = exist_interface.get('details')
+        if target_interface.get('details') is None:
+            target_details = {}
+            target_interface['details'] = target_details
+
+        if strategy == 'merge' and exist_details is not None:
+            # Don't add bulk, version, securitylevel, or the protocol
+            # parameters to merge_params since they require special
+            # handling or are dependencies
+            merge_params = []
+            if given_details.get('bulk') is not None:
+                target_details['bulk'] = '1' if given_details['bulk'] else '0'
+            elif exist_details.get('bulk') is not None:
+                target_details['bulk'] = exist_details['bulk']
+            if given_details.get('version') is not None:
+                if given_details['version'] not in ['1', '2', '3']:
+                    self.module.fail_json(
+                        msg="Invalid SNMP version: {0}".format(
+                            given_details['version']))
+                exist_details['version'] = given_details['version']
+            elif exist_details.get('version') is not None:
+                # TODO: Validate SNMP version from Zabbix?
+                target_details['version'] = exist_details['version']
+            # v3
+            if target_details['version'] == '3':
+                merge_params.extend(['contextname', 'securityname'])
+                if given_details.get('securitylevel') is not None:
+                    validate_arg(
+                        self.module, snmp_securitylevel_types, given_details,
+                        'securitylevel')
+                    exist_details['securitylevel'] = snmp_securitylevel_types[
+                        given_details['securitylevel']]
+                elif exist_details.get('securitylevel') is not None:
+                    target_details['securitylevel'] = exist_details[
+                        'securitylevel']
+                # authNoPriv
+                if target_details['securitylevel'] in ['1', '2']:
+                    if given_details.get('authprotocol') is not None:
+                        validate_arg(
+                            self.module, snmp_authprotocol_types,
+                            given_details, 'authprotocol')
+                        authprotocol = snmp_authprotocol_types[
+                            given_details['authprotocol']]
+                        target_details['authprotocol'] = authprotocol
+                    elif exist_details.get('authprotocol') is not None:
+                        target_details['authprotocol'] = exist_details[
+                            'authprotocol']
+                    merge_params.append('authpassphrase')
+                # authPriv
+                if target_details['securitylevel'] == '2':
+                    if given_details.get('privprotocol') is not None:
+                        validate_arg(
+                            self.module, snmp_privprotocol_types,
+                            given_details, 'privprotocol')
+                        privprotocol = snmp_privprotocol_types[
+                            given_details['privprotocol']]
+                        target_details['privprotocol'] = privprotocol
+                    elif exist_details.get('privprotocol') is not None:
+                        target_details['privprotocol'] = exist_details[
+                            'privprotocol']
+                    merge_params.append('privpassphrase')
+            else:
+                # v1 and v2c
+                merge_params.append('community')
+
+            # Fields dependent on Zabbix version
+            if (Zabbix_version(self.zbx_api_version)
+                    >= Zabbix_version('6.4.0')):
+                if (exist_details['version'] in ['2', '3']
+                        and given_details.get('max_repetitions') is not None):
+                    merge_params.append('max_repetitions')
+            for o in merge_params:
+                for det in [given_details, exist_details]:
+                    if det.get(o) is not None:
+                        target_details[o] = det[o]
+                        break
+
+        if strategy == 'replace' or exist_details is None:
+            if given_details is None:
+                # TODO: Add unit test case for this error.
+                self.module.fail_json(
+                    msg=''.join(["Required parameter for SNMP interface not ",
+                                "found: details"]))
+            # Check the required fields for SNMP
+            if given_details.get('version') is None:
+                self.module.fail_json(
+                    msg="Required parameter not found: version")
+            if given_details['version'] in ['1', '2']:
+                req_parameters = snmp_parameters[given_details['version']]
+            elif given_details['version'] == '3':
+                if given_details.get('securitylevel') is None:
+                    self.module.fail_json(
+                        msg="Required parameter not found: securitylevel")
+                validate_arg(
+                    self.module, snmp_securitylevel_types, given_details,
+                    'securitylevel')
+                req_parameters = snmp_parameters[
+                    given_details['version']][given_details['securitylevel']]
+            else:
+                self.module.fail_json(msg="Invalid SNMP version: {0}".format(
+                    given_details['version']))
+            # If additional fields need to be added and some logic is
+            # required, then this can be done here.
+            # If the new field only depends on the version, then it
+            # must be added to the helper.
+            if given_details['version'] in ['2', '3'] and (
+                    Zabbix_version(self.zbx_api_version)
+                    >= Zabbix_version('6.4.0')):
+                req_parameters.append('max_repetitions')
+
+            input_arguments = [e for e in given_details
+                               if given_details[e] is not None]
+            more_parameters = list(set(input_arguments) - set(req_parameters))
+            less_parameters = list(set(req_parameters) - set(input_arguments))
+            # TODO: Create a combined error when both conditionals are true?
+            if more_parameters:
+                self.module.fail_json(
+                    msg="Incorrect arguments for SNMPv{0}: {1}".format(
+                        given_details['version'],
+                        ', '.join(more_parameters)))
+            if less_parameters:
+                self.module.fail_json(
+                    msg=''.join(["Required parameter not found for SNMPv",
+                                "{0}: {1}".format(
+                                    given_details['version'],
+                                    ', '.join(less_parameters))]))
+            # v1 and v2c
+            target_details['version'] = given_details['version']
+            target_details['bulk'] = '1' if given_details['bulk'] else '0'
+            # Only for Zabbix versions above 6.4
+            if Zabbix_version(self.zbx_api_version) >= Zabbix_version('6.4.0'):
+                if (target_details['version'] == '2'
+                        or target_details['version'] == '3'):
+                    target_details['max_repetitions'] = given_details[
+                        'max_repetitions']
+            # v3
+            if target_details['version'] == '3':
+                target_details['contextname'] = given_details['contextname']
+                target_details['securityname'] = given_details['securityname']
+                target_details['securitylevel'] = snmp_securitylevel_types[
+                    given_details['securitylevel']]
+                target_details['authprotocol'] = '0'
+                target_details['authpassphrase'] = ''
+                target_details['privprotocol'] = '0'
+                target_details['privpassphrase'] = ''
+                # authNoPriv
+                if target_details['securitylevel'] in ['1', '2']:
+                    validate_arg(
+                        self.module, snmp_authprotocol_types, given_details,
+                        'authprotocol')
+                    target_details['authprotocol'] = snmp_authprotocol_types[
+                        given_details['authprotocol']]
+                    target_details['authpassphrase'] = given_details[
+                        'authpassphrase']
+                # authPriv
+                if target_details['securitylevel'] == '2':
+                    validate_arg(
+                        self.module, snmp_privprotocol_types, given_details,
+                        'privprotocol')
+                    target_details['privprotocol'] = snmp_privprotocol_types[
+                        given_details['privprotocol']]
+                    target_details['privpassphrase'] = given_details[
+                        'privpassphrase']
+            else:
+                target_details['community'] = given_details['community']
 
     def compare_zabbix_host(self, exist_host, new_host):
         """
@@ -997,7 +1386,6 @@ class Host(object):
                 for interface in exist_host['interfaces']:
                     if each['type'] == interface['type']:
                         total_interface = each
-                        total_interface['interfaceid'] = interface['interfaceid']
                         new_interfaces.append(total_interface)
                         if total_interface != interface:
                             interface_updating_flag = True
@@ -1006,7 +1394,7 @@ class Host(object):
                     new_interfaces.append(each)
                     interface_updating_flag = True
 
-            if interface_updating_flag is True:
+            if interface_updating_flag:
                 param_to_update['interfaces'] = new_interfaces
 
         return param_to_update
@@ -1020,9 +1408,28 @@ def main():
             'type': 'str',
             'default': 'present',
             'choices': ['present', 'absent']},
-        'hostid': {
-            'type': 'str',
-            'aliases': ['id']},
+        'hostid': {'type': 'str', 'aliases': ['id']},
+        'host': {'type': 'str', 'aliases': ['host_name']},
+        'update_strategy': {
+            'type': 'dict',
+            'options': {
+                'hostgroups': {
+                    'type': 'str',
+                    'default': 'replace',
+                    'choices': ['replace', 'merge', 'delete']
+                    },
+                'templates': {
+                    'type': 'str',
+                    'default': 'replace',
+                    'choices': ['replace', 'merge', 'delete']},
+                'macros': {
+                    'type': 'str',
+                    'default': 'replace',
+                    'choices': ['replace', 'merge', 'delete']},
+                'interfaces': {
+                    'type': 'str',
+                    'default': 'replace',
+                    'choices': ['replace', 'merge', 'delete']}}},
         'host': {
             'type': 'str',
             'aliases': ['host_name']},
@@ -1134,9 +1541,9 @@ def main():
 
     # Find a host in Zabbix
     if host_id and len(host_id) > 0:
-       result = host.zapi.find_zabbix_host_by_hostid(host_id)
+        result = host.zapi.find_zabbix_host_by_hostid(host_id)
     else:
-      result = host.zapi.find_zabbix_host_by_host(host_name)
+        result = host.zapi.find_zabbix_host_by_host(host_name)
 
     if state == 'present':
 
