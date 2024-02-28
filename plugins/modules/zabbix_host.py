@@ -25,12 +25,18 @@ options:
         type: str
         default: present
         choices: [ present, absent ]
+    hostid:
+        description:
+            - An existing host to update or delete.
+            - Ignored for new hosts.
+            - Required for host name changes.
+        type: str
+        aliases: [ id ]
     host:
         description:
             - Host name to create.
-            - The name of an existing host in case of an update.
+            - The name of an existing host in case of an update or deletion.
         type: str
-        required: true
         aliases: [ host_name ]
     name:
         description: Visible host name
@@ -436,6 +442,18 @@ EXAMPLES = r'''
     # These options only affect the basic HTTP authorization configured on the web server.
     http_login: my_http_login                   # Username for connecting to API in case of additional basic HTTP authorization.
     http_password: my_http_password             # Password for connecting to API in case of additional basic HTTP authorization.
+
+    # Rename a host
+- name: Rename host
+  zabbix.zabbix.zabbix_host:
+    state: present
+    hostid: "{{ hostvars[hostid] }}"
+    host: "{{ inventory_hostname ~ '_2' }}"
+  vars:
+    ansible_network_os: zabbix.zabbix.zabbix
+    ansible_connection: httpapi
+    ansible_user: Admin
+    ansible_httpapi_pass: zabbix
 '''
 
 RETURN = r""" # """
@@ -1002,9 +1020,11 @@ def main():
             'type': 'str',
             'default': 'present',
             'choices': ['present', 'absent']},
+        'hostid': {
+            'type': 'str',
+            'aliases': ['id']},
         'host': {
             'type': 'str',
-            'required': True,
             'aliases': ['host_name']},
         'hostgroups': {
             'type': 'list',
@@ -1103,15 +1123,20 @@ def main():
     module = AnsibleModule(
         argument_spec=spec,
         required_together=[('tls_psk_identity', 'tls_psk')],
+        required_one_of=[('hostid', 'host')],
         supports_check_mode=True)
 
     state = module.params['state']
+    host_id = module.params['hostid']
     host_name = module.params['host']
 
     host = Host(module, ZabbixApi(module))
 
     # Find a host in Zabbix
-    result = host.zapi.find_zabbix_host_by_host(host_name)
+    if host_id and len(host_id) > 0:
+       result = host.zapi.find_zabbix_host_by_hostid(host_id)
+    else:
+      result = host.zapi.find_zabbix_host_by_host(host_name)
 
     if state == 'present':
 
@@ -1150,6 +1175,7 @@ def main():
 
         else:
             # Create host
+            module.warn("Ignoring read-only property: {0}".format(module.params['hostid']))
             new_host_params = host.generate_zabbix_host()
 
             result = host.host_api_request(
