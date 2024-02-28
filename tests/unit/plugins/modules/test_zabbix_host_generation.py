@@ -2321,7 +2321,8 @@ class TestInterfaces(TestModules):
 
 class TestInterfaces_pytest(object):
     """
-    Class for testing the operation of the module with interface parameters
+    Class for testing the operation of the module with interface 
+    parameters.
 
     Test areas:
     - ip/port defaults [all interface types]
@@ -2346,18 +2347,42 @@ class TestInterfaces_pytest(object):
 
     agent_snmp_ipmi_jmx_interface_creation_ip_port_defaults_test_cases = [
         # type, port, details
-        (('agent', '1'), (None, '10050'), (None, [])),
-        (('snmp', '2'), (None, '161'), ({'version': '1', 'bulk': True, 'community': '111'}, {'version': '1', 'bulk': '1', 'community': '111'})),
-        (('ipmi', '3'), (None, '623'), (None, [])),
-        (('jmx', '4'), (None, '12345'), (None, []))
+        (
+            ('agent', '1'),
+            (None, '10050'),
+            (None, [])
+        ),
+        (
+            ('snmp', '2'),
+            (None, '161'),
+            (
+                {'version': '1', 'bulk': True, 'community': '111'},
+                {'version': '1', 'bulk': '1', 'community': '111'}
+            )
+        ),
+        (
+            ('ipmi', '3'),
+            (None, '623'),
+            (None, [])
+        ),
+        (
+            ('jmx', '4'),
+            (None, '12345'),
+            (None, [])
+        )
     ]
 
-    @pytest.mark.parametrize("itype, iport, idetails", agent_snmp_ipmi_jmx_interface_creation_ip_port_defaults_test_cases)
-    def test_agent_snmp_ipmi_jmx_interface_creation_ip_port_defaults(self, itype, iport, idetails, fixture_apiversion, fixture_connection, fixture_hostmodule):
+    @pytest.mark.parametrize(
+        "itype, iport, idetails",
+        agent_snmp_ipmi_jmx_interface_creation_ip_port_defaults_test_cases)
+    def test_agent_snmp_ipmi_jmx_interface_creation_ip_port_defaults(
+            self, itype, iport, idetails, fixture_apiversion,
+            fixture_connection, fixture_hostmodule):
         """
-        Testing interface ip and port defaults in the creation of new interfaces for a given host.
+        Testing interface ip and port defaults in the creation of 
+        new interfaces for a given host.
 
-        Test cases (see agent_ipmi_jmx_interface_creation_port_defaults_test_cases):
+        Test cases:
         1. agent interface
         2. SNMP interface
         3. IPMI interface
@@ -2367,21 +2392,26 @@ class TestInterfaces_pytest(object):
         """
         input = 0
         expected = 1
-        exist_host = {'host': 'test_host', 'inventory_mode': '1', 'interfaces': []}
+        exist_host = {'host': 'test_host', 'inventory_mode': '1',
+                      'interfaces': []}
 
         input_param = {
             'host': 'test_host',
             'interfaces': [{
-                'type': itype[input], 'port': iport[input], 'useip': True, 'ip': '', 'dns': '',
+                'type': itype[input], 'port': iport[input], 'useip': True,
+                'ip': '', 'dns': '',
                 'details': idetails[input]}]}
         expected_result = {
             'host': 'test_host',
             'interfaces': [{
-                'type': itype[expected], 'port': iport[expected], 'useip': '1', 'ip': '127.0.0.1', 'dns': '',
+                'type': itype[expected], 'port': iport[expected], 'useip': '1',
+                'ip': '127.0.0.1', 'dns': '',
                 'details': idetails[expected], 'main': '1'}]}
 
         fixture_hostmodule.params = input_param
-        host = self.module.Host(fixture_hostmodule, ZabbixApi(fixture_hostmodule))
+        host = self.module.Host(
+            fixture_hostmodule,
+            ZabbixApi(fixture_hostmodule))
 
         result = host.generate_zabbix_host(exist_host)
 
@@ -2402,27 +2432,33 @@ class TestInterfaces_pytest(object):
             ('snmp', '2'),
             ('10.10.20.55', '10.10.20.55'),
             ('test_snmp.com', 'test_snmp.com'),
-            ({'version': '1', 'bulk': True, 'community': '111'}, {'version': '1', 'bulk': '1', 'community': '111'})),
+            ({'version': '1', 'bulk': True, 'community': '111'},
+             {'version': '1', 'bulk': '1', 'community': '111'})),
         (
             ('ipmi', '3'),
             ('10.10.30.6', '10.10.30.6'),
             ('test_ipmi.com', 'test_ipmi.com'),
             (None, [])
-            ),
+        ),
         (
             ('jmx', '4'),
             ('10.10.5.2', '10.10.5.2'),
             ('test_jmx.com', 'test_jmx.com'),
             (None, [])
-            )
+        )
     ]
 
-    @pytest.mark.parametrize("itype, ip, dns, idetails", agent_snmp_ipmi_jmx_interface_creation_param_passthru_test_cases)
-    def test_agent_snmp_ipmi_jmx_interface_creation_param_passthru_defaults(self, itype, ip, dns, idetails, fixture_apiversion, fixture_connection, fixture_hostmodule):
+    @pytest.mark.parametrize(
+        "itype, ip, dns, idetails",
+        agent_snmp_ipmi_jmx_interface_creation_param_passthru_test_cases)
+    def test_agent_snmp_ipmi_jmx_interface_creation_param_passthru_defaults(
+            self, itype, ip, dns, idetails, fixture_apiversion,
+            fixture_connection, fixture_hostmodule):
         """
-        Testing interface ip and dns value passthrough in the creation of new interfaces for a given host.
+        Testing interface ip and dns value passthrough in the 
+        creation of new interfaces for a given host.
 
-        Test cases (see agent_snmp_ipmi_jmx_interface_creation_param_passthru_test_cases):
+        Test cases:
         1. agent interface
         2. SNMP interface
         3. IPMI interface
@@ -2432,21 +2468,26 @@ class TestInterfaces_pytest(object):
         """
         input = 0
         expected = 1
-        exist_host = {'host': 'test_host', 'inventory_mode': '1', 'interfaces': []}
+        exist_host = {'host': 'test_host', 'inventory_mode': '1',
+                      'interfaces': []}
 
         input_param = {
             'host': 'test_host',
             'interfaces': [{
-                'type': itype[input], 'port': '1000', 'useip': True, 'ip': ip[input], 'dns': dns[input],
+                'type': itype[input], 'port': '1000', 'useip': True,
+                'ip': ip[input], 'dns': dns[input],
                 'details': idetails[input]}]}
         expected_result = {
             'host': 'test_host',
             'interfaces': [{
-                'type': itype[expected], 'port': '1000', 'useip': '1', 'ip': ip[expected], 'dns': dns[expected],
+                'type': itype[expected], 'port': '1000', 'useip': '1',
+                'ip': ip[expected], 'dns': dns[expected],
                 'details': idetails[expected], 'main': '1'}]}
 
         fixture_hostmodule.params = input_param
-        host = self.module.Host(fixture_hostmodule, ZabbixApi(fixture_hostmodule))
+        host = self.module.Host(
+            fixture_hostmodule,
+            ZabbixApi(fixture_hostmodule))
 
         result = host.generate_zabbix_host(exist_host)
 
@@ -2457,7 +2498,8 @@ class TestInterfaces_pytest(object):
         {'type': 'agent', 'useip': False, 'ip': '10.10.10.10', 'dns': '',
             'port': '10051'},
         {'type': 'snmp', 'useip': False, 'ip': '30.30.30.30', 'dns': '',
-            'port': '161', 'details': {'version': '1', 'bulk': True, 'community': '111'}},
+            'port': '161', 'details': {
+                'version': '1', 'bulk': True, 'community': '111'}},
         {'type': 'ipmi', 'useip': False, 'ip': '20.20.20.20', 'dns': '',
             'port': '650'},
         {'type': 'jmx', 'useip': False, 'ip': '30.30.30.30', 'dns': '',
@@ -2465,10 +2507,12 @@ class TestInterfaces_pytest(object):
     ]
 
     @pytest.mark.parametrize("input", require_dns_test_cases)
-    def test_required_param_exception_dns(self, input, fixture_apiversion, fixture_connection, fixture_hostmodule):
+    def test_required_param_exception_dns(
+            self, input, fixture_apiversion,
+            fixture_connection, fixture_hostmodule):
         """
-        Testing the creation of interfaces for monitoring via DNS. In this
-        case, the DNS name field is required.
+        Testing the creation of interfaces for monitoring via DNS. In 
+        this case, the DNS name field is required.
 
         Expected result: an exception with an error message.
         """
@@ -2478,14 +2522,19 @@ class TestInterfaces_pytest(object):
             'host': 'test_host',
             'interfaces': [input]}
         fixture_hostmodule.params = input_param
-        host = self.module.Host(fixture_hostmodule, ZabbixApi(fixture_hostmodule))
+        host = self.module.Host(
+            fixture_hostmodule,
+            ZabbixApi(fixture_hostmodule))
 
-        with pytest.raises(AnsibleFailJson, match="Required parameter not found") as ansible_result:
+        with pytest.raises(
+                AnsibleFailJson,
+                match="Required parameter not found") as ansible_result:
             host.generate_zabbix_host(exist_host)
         assert ansible_result.value.args[0]['failed']
         assert 'dns' in ansible_result.value.args[0]['msg']
 
-    def should_not_test_require_dns(self, fixture_apiversion, fixture_connection, fixture_hostmodule):
+    def should_not_test_require_dns(
+            self, fixture_apiversion, fixture_connection, fixture_hostmodule):
         """
         The dns property is still required even when useip is true.
 
@@ -2495,10 +2544,12 @@ class TestInterfaces_pytest(object):
 
         input_param = {
             'host': 'test_host',
-            'interfaces': [{'type': 'agent', 'useip': True, 'ip': '10.10.10.10',
-                            'port': '10051'}]}
+            'interfaces': [{'type': 'agent', 'useip': True,
+                            'ip': '10.10.10.10', 'port': '10051'}]}
         fixture_hostmodule.params = input_param
-        host = self.module.Host(fixture_hostmodule, ZabbixApi(fixture_hostmodule))
+        host = self.module.Host(
+            fixture_hostmodule,
+            ZabbixApi(fixture_hostmodule))
 
         with pytest.raises(KeyError) as key_err:
             host.generate_zabbix_host(exist_host)
@@ -2506,19 +2557,26 @@ class TestInterfaces_pytest(object):
 
     snmp_missing_or_invalid_version_test_cases = [
         (
-            {'bulk': True, 'community': '111', 'securitylevel': 'noAuthNoPriv'},
+            {'bulk': True, 'community': '111',
+             'securitylevel': 'noAuthNoPriv'},
             'version'
         ),
         (
-            {'version': '4', 'bulk': True, 'community': '111', 'securitylevel': 'noAuthNoPriv'},
+            {'version': '4', 'bulk': True, 'community': '111',
+             'securitylevel': 'noAuthNoPriv'},
             '4'
         )
     ]
 
-    @pytest.mark.parametrize('input, key', snmp_missing_or_invalid_version_test_cases)
-    def test_snmp_missing_or_invalid_version(self, input, key, fixture_apiversion, fixture_connection, fixture_hostmodule):
+    @pytest.mark.parametrize(
+        'input, key',
+        snmp_missing_or_invalid_version_test_cases)
+    def test_snmp_missing_or_invalid_version(
+            self, input, key, fixture_apiversion, fixture_connection,
+            fixture_hostmodule):
         """
-        Testing the validity of the version parameter of SNMP interfaces.
+        Testing the validity of the version parameter of 
+        SNMP interfaces.
         Test cases:
 
         1. Interface version is missing.
@@ -2528,7 +2586,9 @@ class TestInterfaces_pytest(object):
         """
         exist_host = {'host': 'test_host', 'inventory_mode': '1'}
 
-        input_interface = {'type': 'snmp', 'useip': True, 'ip': '127.0.0.1', 'dns': 'test_snmp.com', 'port': '161'}
+        input_interface = {
+            'type': 'snmp', 'useip': True,
+            'ip': '127.0.0.1', 'dns': 'test_snmp.com', 'port': '161'}
         input_interface['details'] = input
 
         input_param = {
@@ -2536,7 +2596,9 @@ class TestInterfaces_pytest(object):
             'interfaces': [input_interface]}
 
         fixture_hostmodule.params = input_param
-        host = self.module.Host(fixture_hostmodule, ZabbixApi(fixture_hostmodule))
+        host = self.module.Host(
+            fixture_hostmodule,
+            ZabbixApi(fixture_hostmodule))
 
         with pytest.raises(KeyError) as key_err:
             host.generate_zabbix_host(exist_host)
@@ -2553,29 +2615,38 @@ class TestInterfaces_pytest(object):
 
     agent_ipmi_jmx_invalid_useip_test_cases = [
         (
-            {'type': 'agent', 'useip': None, 'ip': '127.0.0.1', 'dns': 'test_agent.com', 'port': '161'},
-            {'type': '1', 'useip': None, 'ip': '127.0.0.1', 'dns': 'test_agent.com', 'port': '161',
+            {'type': 'agent', 'useip': None, 'ip': '127.0.0.1',
+             'dns': 'test_agent.com', 'port': '161'},
+            {'type': '1', 'useip': None, 'ip': '127.0.0.1',
+             'dns': 'test_agent.com', 'port': '161',
              'details': [], 'main': '1'}
         ),
         (
-            {'type': 'ipmi', 'useip': None, 'ip': '127.0.0.1', 'dns': 'test_ipmi.com', 'port': '161'
-            },
-            {'type': '3', 'useip': None, 'ip': '127.0.0.1', 'dns': 'test_ipmi.com', 'port': '161',
+            {'type': 'ipmi', 'useip': None, 'ip': '127.0.0.1',
+             'dns': 'test_ipmi.com', 'port': '161'},
+            {'type': '3', 'useip': None, 'ip': '127.0.0.1',
+             'dns': 'test_ipmi.com', 'port': '161',
              'details': [], 'main': '1'}
         ),
         (
-            {'type': 'jmx', 'useip': None, 'ip': '127.0.0.1', 'dns': 'test_jmx.com', 'port': '161'
-            },
-            {'type': '4', 'useip': None, 'ip': '127.0.0.1', 'dns': 'test_jmx.com', 'port': '161',
+            {'type': 'jmx', 'useip': None, 'ip': '127.0.0.1',
+             'dns': 'test_jmx.com', 'port': '161'},
+            {'type': '4', 'useip': None, 'ip': '127.0.0.1',
+             'dns': 'test_jmx.com', 'port': '161',
              'details': [], 'main': '1'}
         )
     ]
 
     @pytest.mark.parametrize("useip", useip_bulk_test_values)
-    @pytest.mark.parametrize('input_dict, expected_dict', agent_ipmi_jmx_invalid_useip_test_cases)
-    def test_agent_ipmi_jmx_invalid_useip(self, useip, input_dict, expected_dict, fixture_apiversion, fixture_connection, fixture_hostmodule):
+    @pytest.mark.parametrize(
+        'input_dict, expected_dict',
+        agent_ipmi_jmx_invalid_useip_test_cases)
+    def test_agent_ipmi_jmx_invalid_useip(
+            self, useip, input_dict, expected_dict, fixture_apiversion,
+            fixture_connection, fixture_hostmodule):
         """
-        Testing cases of invalid values for useip and bulk parameters of agent, IPMI, and JMX interfaces.
+        Testing cases of invalid values for useip and bulk parameters
+        of agent, IPMI, and JMX interfaces.
         Test cases:
 
         1. Interface useip with non-bool argument ('garbage').
@@ -2600,7 +2671,9 @@ class TestInterfaces_pytest(object):
             'interfaces': [expected_dict]}
 
         fixture_hostmodule.params = input_param
-        host = self.module.Host(fixture_hostmodule, ZabbixApi(fixture_hostmodule))
+        host = self.module.Host(
+            fixture_hostmodule,
+            ZabbixApi(fixture_hostmodule))
 
         result = host.generate_zabbix_host(exist_host)
 
@@ -2609,40 +2682,53 @@ class TestInterfaces_pytest(object):
 
     snmp_v1_v2_v3_invalid_useip_bulk_test_cases = [
         (
-            {'type': 'snmp', 'useip': None, 'ip': '127.0.0.1', 'dns': 'test_snmp.com', 'port': '161',
+            {'type': 'snmp', 'useip': None, 'ip': '127.0.0.1',
+             'dns': 'test_snmp.com', 'port': '161',
              'details': {
                  'version': '1', 'bulk': None, 'community': '111'}
-            },
-            {'type': '2', 'useip': None, 'ip': '127.0.0.1', 'port': '161', 'dns': 'test_snmp.com',
-             'details': {'version': '1', 'bulk': None, 'community': '111'}, 'main': '1'}
+             },
+            {'type': '2', 'useip': None, 'ip': '127.0.0.1', 'port': '161',
+             'dns': 'test_snmp.com', 'main': '1',
+             'details': {'version': '1', 'bulk': None, 'community': '111'}}
         ),
         (
-            {'type': 'snmp', 'useip': None, 'ip': '127.0.0.1', 'dns': 'test_snmp.com', 'port': '161',
+            {'type': 'snmp', 'useip': None, 'ip': '127.0.0.1',
+             'dns': 'test_snmp.com', 'port': '161',
              'details': {
                  'version': '2', 'bulk': None, 'community': '111'}
-            },
-            {'type': '2', 'useip': None, 'ip': '127.0.0.1', 'port': '161', 'dns': 'test_snmp.com',
-             'details': {'version': '2', 'bulk': None, 'community': '111'}, 'main': '1'}
+             },
+            {'type': '2', 'useip': None, 'ip': '127.0.0.1', 'port': '161',
+             'dns': 'test_snmp.com', 'main': '1',
+             'details': {'version': '2', 'bulk': None, 'community': '111'}}
         ),
         (
-            {'type': 'snmp', 'useip': None, 'ip': '127.0.0.1', 'dns': 'test_snmp.com', 'port': '161',
+            {'type': 'snmp', 'useip': None, 'ip': '127.0.0.1',
+             'dns': 'test_snmp.com', 'port': '161',
              'details': {
-                 'version': '3', 'bulk': None, 'securitylevel': 'noAuthNoPriv', 'contextname': 'contextname',
-                 'securityname': 'securityname'}
-            },
-            {'type': '2', 'useip': None, 'ip': '127.0.0.1', 'port': '161', 'dns': 'test_snmp.com',
-             'details': {'version': '3', 'bulk': None, 'securitylevel': '0', 'contextname': 'contextname',
-                         'securityname': 'securityname', 'authprotocol': '0', 'authpassphrase': '',
-                         'privprotocol': '0', 'privpassphrase': ''}, 'main': '1'}
+                 'version': '3', 'bulk': None, 'securitylevel': 'noAuthNoPriv',
+                 'contextname': 'contextname', 'securityname': 'securityname'}
+             },
+            {'type': '2', 'useip': None, 'ip': '127.0.0.1', 'port': '161',
+             'dns': 'test_snmp.com', 'main': '1',
+             'details': {
+                 'version': '3', 'bulk': None, 'securitylevel': '0',
+                 'contextname': 'contextname', 'securityname': 'securityname',
+                 'authprotocol': '0', 'authpassphrase': '',
+                 'privprotocol': '0', 'privpassphrase': ''}}
         )
     ]
 
     @pytest.mark.parametrize("useip", useip_bulk_test_values)
     @pytest.mark.parametrize("bulk", useip_bulk_test_values)
-    @pytest.mark.parametrize('input_dict, expected_dict', snmp_v1_v2_v3_invalid_useip_bulk_test_cases)
-    def test_snmp_v1_v2_v3_invalid_useip_bulk(self, useip, bulk, input_dict, expected_dict, fixture_apiversion, fixture_connection, fixture_hostmodule):
+    @pytest.mark.parametrize(
+        'input_dict, expected_dict',
+        snmp_v1_v2_v3_invalid_useip_bulk_test_cases)
+    def test_snmp_v1_v2_v3_invalid_useip_bulk(
+            self, useip, bulk, input_dict, expected_dict,
+            fixture_apiversion, fixture_connection, fixture_hostmodule):
         """
-        Testing cases of invalid values for useip and bulk parameters of SNMP interfaces.
+        Testing cases of invalid values for useip and bulk parameters 
+        of SNMP interfaces.
         Test cases:
 
         SNMPv1/SNMPv2/SNMPv3:
@@ -2676,7 +2762,9 @@ class TestInterfaces_pytest(object):
             'interfaces': [expected_dict]}
 
         fixture_hostmodule.params = input_param
-        host = self.module.Host(fixture_hostmodule, ZabbixApi(fixture_hostmodule))
+        host = self.module.Host(
+            fixture_hostmodule,
+            ZabbixApi(fixture_hostmodule))
 
         result = host.generate_zabbix_host(exist_host)
 
@@ -2685,8 +2773,9 @@ class TestInterfaces_pytest(object):
 
     snmp_v1_v2_required_param_exception_test_cases = [
         (  # test case 1
-            {'bulk': None, 'community': '111', 'max_repetitions': None, 'contextname': None,
-             'securityname': None, 'securitylevel': None, 'authprotocol': None, 'authpassphrase': None,
+            {'bulk': None, 'community': '111', 'max_repetitions': None,
+             'contextname': None, 'securityname': None, 'securitylevel': None,
+             'authprotocol': None, 'authpassphrase': None,
              'privprotocol': None, 'privpassphrase': None},
             ['bulk']
         ),
@@ -2721,27 +2810,40 @@ class TestInterfaces_pytest(object):
     ]
 
     @pytest.mark.parametrize('version', ['1', '2'])
-    @pytest.mark.parametrize('input, keys', snmp_v1_v2_required_param_exception_test_cases)
-    def test_snmp_v1_v2_required_param_exception(self, version, input, keys, fixture_apiversion, fixture_connection, fixture_hostmodule):
+    @pytest.mark.parametrize(
+        'input, keys',
+        snmp_v1_v2_required_param_exception_test_cases)
+    def test_snmp_v1_v2_required_param_exception(
+            self, version, input, keys, fixture_apiversion,
+            fixture_connection, fixture_hostmodule):
         """
-        Testing when required parameters of SNMP version 1 and 2 interfaces are missing/None.
+        Testing when required parameters of SNMP version 1 and 2 
+        interfaces are missing/None.
         Test cases (see req_param_exception_v1_v2_test_cases):
 
         SNMPv1/SNMPv2:
         1. Interface version 1/2 bulk is None (one parameter in error).
-        2. Interface version 1/2 bulk is missing (one parameter in error).
-        3. Interface version 1/2 community is None (one parameter in error).
-        4. Interface version 1/2 community is missing (one parameter in error).
-        5. Interface version 1/2 bulk is None and community is None (both parameters  in error).
-        6. Interface version 1/2 bulk is missing and community is missing (both parameters  in error).
-        7. Interface version 1/2 bulk is missing and community is None (both parameters  in error).
-        8. Interface version 1/2 bulk is None and community is missing (both parameters  in error).   
+        2. Interface version 1/2 bulk is missing (one parameter in 
+            error).
+        3. Interface version 1/2 community is None (one parameter in 
+            error).
+        4. Interface version 1/2 community is missing (one parameter 
+            in error).
+        5. Interface version 1/2 bulk is None and community is None 
+            (both parameters  in error).
+        6. Interface version 1/2 bulk is missing and community is 
+            missing (both parameters  in error).
+        7. Interface version 1/2 bulk is missing and community is None 
+            (both parameters  in error).
+        8. Interface version 1/2 bulk is None and community is missing 
+            (both parameters  in error).   
 
         Expected result: all test cases raise exception.
         """
         exist_host = {'host': 'test_host', 'inventory_mode': '1'}
 
-        input_interface = {'type': 'snmp', 'useip': True, 'ip': '127.0.0.1', 'dns': 'test_snmp.com', 'port': '161'}
+        input_interface = {'type': 'snmp', 'useip': True, 'ip': '127.0.0.1',
+                           'dns': 'test_snmp.com', 'port': '161'}
         input_interface['details'] = input
         input_interface['details']['version'] = version
 
@@ -2750,9 +2852,13 @@ class TestInterfaces_pytest(object):
             'interfaces': [input_interface]}
 
         fixture_hostmodule.params = input_param
-        host = self.module.Host(fixture_hostmodule, ZabbixApi(fixture_hostmodule))
+        host = self.module.Host(
+            fixture_hostmodule,
+            ZabbixApi(fixture_hostmodule))
 
-        with pytest.raises(AnsibleFailJson, match="Required parameter not found") as ansible_result:
+        with pytest.raises(
+                AnsibleFailJson,
+                match="Required parameter not found") as ansible_result:
             host.generate_zabbix_host(exist_host)
         assert ansible_result.value.args[0]['failed']
         for parameter in keys:
@@ -2764,8 +2870,10 @@ class TestInterfaces_pytest(object):
             ['contextname']
         ),
         (  # test case 2
-            {'bulk': True, 'community': '111', 'max_repetitions': None, 'contextname': 'contextname',
-             'securityname': None, 'securitylevel': None, 'authprotocol': None, 'authpassphrase': None,
+            {'bulk': True, 'community': '111', 'max_repetitions': None,
+             'contextname': 'contextname', 'securityname': None,
+             'securitylevel': None,
+             'authprotocol': None, 'authpassphrase': None,
              'privprotocol': None, 'privpassphrase': None},
             ['contextname']
         ),
@@ -2776,22 +2884,31 @@ class TestInterfaces_pytest(object):
     ]
 
     @pytest.mark.parametrize('version', ['1', '2'])
-    @pytest.mark.parametrize('input, keys', snmp_v1_v2_incorrect_args_exception_test_cases)
-    def test_snmp_v1_v2_incorrect_args_exception(self, version, input, keys, fixture_apiversion, fixture_connection, fixture_hostmodule):
+    @pytest.mark.parametrize(
+        'input, keys',
+        snmp_v1_v2_incorrect_args_exception_test_cases)
+    def test_snmp_v1_v2_incorrect_args_exception(
+            self, version, input, keys, fixture_apiversion,
+            fixture_connection, fixture_hostmodule):
         """
-        Testing of disallowed parameters for SNMP version 1 and 2 interfaces.
+        Testing of disallowed parameters for SNMP version 1 and 2 
+        interfaces.
         Test cases (see snmp_v1_v2_incorrect_args_exception_test_cases):
 
         SNMPv1/SNMPv2:
-        1. Interface version 1/2 with additional parameter from SNMPv3 (context name).
-        2. Interface version 1/2 with additional parameter from SNMPv3 (context name) and other SNMPv3 parameters set to None.
-        3. Interface version 1/2 with additional parameter (context name) and missing parameter (community).
+        1. Interface version 1/2 with additional parameter from SNMPv3 
+            (context name).
+        2. Interface version 1/2 with additional parameter from SNMPv3 
+            (context name) and other SNMPv3 parameters set to None.
+        3. Interface version 1/2 with additional parameter (context 
+            name) and missing parameter (community).
 
         Expected result: all test cases raise exception.
         """
         exist_host = {'host': 'test_host', 'inventory_mode': '1'}
 
-        input_interface = {'type': 'snmp', 'useip': True, 'ip': '127.0.0.1', 'dns': 'test_snmp.com', 'port': '161'}
+        input_interface = {'type': 'snmp', 'useip': True, 'ip': '127.0.0.1',
+                           'dns': 'test_snmp.com', 'port': '161'}
         input_interface['details'] = input
         input_interface['details']['version'] = version
 
@@ -2800,9 +2917,13 @@ class TestInterfaces_pytest(object):
             'interfaces': [input_interface]}
 
         fixture_hostmodule.params = input_param
-        host = self.module.Host(fixture_hostmodule, ZabbixApi(fixture_hostmodule))
+        host = self.module.Host(
+            fixture_hostmodule,
+            ZabbixApi(fixture_hostmodule))
 
-        with pytest.raises(AnsibleFailJson, match="Incorrect arguments for") as ansible_result:
+        with pytest.raises(
+                AnsibleFailJson,
+                match="Incorrect arguments for") as ansible_result:
             host.generate_zabbix_host(exist_host)
         assert ansible_result.value.args[0]['failed']
         assert "Incorrect arguments for" in ansible_result.value.args[0]['msg']
@@ -2815,15 +2936,19 @@ class TestInterfaces_pytest(object):
             ['max_repetitions']
         ),
         (  # Interface version 2 not specifying max_repetitions
-            {'version': '2', 'bulk': False, 'community': 'public', 'max_repetitions': None},
+            {'version': '2', 'bulk': False, 'community': 'public',
+             'max_repetitions': None},
             ['max_repetitions']
         )]
 
-    @pytest.mark.parametrize("input, keys", snmp_v2_64_req_params_exception_test_cases)
-    def test_snmp_v2_64_req_params_exception(self, input, keys, fixture_apiversion_64, fixture_connection, fixture_hostmodule):
+    @pytest.mark.parametrize(
+        'input, keys', snmp_v2_64_req_params_exception_test_cases)
+    def test_snmp_v2_64_req_params_exception(
+            self, input, keys, fixture_apiversion_64,
+            fixture_connection, fixture_hostmodule):
         """
-        Testing SNMP version 2 for Zabbix version above 6.4. In this case,
-        the 'max_repetitions' field is required.
+        Testing SNMP version 2 for Zabbix version above 6.4. In this
+        case, the 'max_repetitions' field is required.
         Test cases:
 
         1. Interface version 2 max_repetitions missing.
@@ -2833,7 +2958,8 @@ class TestInterfaces_pytest(object):
         """
         exist_host = {'host': 'test_host', 'inventory_mode': '1'}
 
-        input_interface = {'type': 'snmp', 'useip': True, 'ip': '127.0.0.1', 'dns': 'test_snmp.com', 'port': '161'}
+        input_interface = {'type': 'snmp', 'useip': True, 'ip': '127.0.0.1',
+                           'dns': 'test_snmp.com', 'port': '161'}
         input_interface['details'] = input
 
         input_param = {
@@ -2841,9 +2967,13 @@ class TestInterfaces_pytest(object):
             'interfaces': [input_interface]}
 
         fixture_hostmodule.params = input_param
-        host = self.module.Host(fixture_hostmodule, ZabbixApi(fixture_hostmodule))
+        host = self.module.Host(
+            fixture_hostmodule,
+            ZabbixApi(fixture_hostmodule))
 
-        with pytest.raises(AnsibleFailJson, match="Required parameter not found") as ansible_result:
+        with pytest.raises(
+                AnsibleFailJson,
+                match="Required parameter not found") as ansible_result:
             host.generate_zabbix_host(exist_host)
         assert ansible_result.value.args[0]['failed']
         for parameter in keys:
@@ -2868,14 +2998,18 @@ class TestInterfaces_pytest(object):
         (  # test case 4
             {'version': '3', 'bulk': True, 'contextname': 'contextname',
                 'securityname': 'securityname', 'securitylevel': 'authPriv',
-                'authprotocol': 'md5', 'authpassphrase': '', 'privprotocol': 'garbage',
-                'privpassphrase': ''},
+                'authprotocol': 'md5', 'authpassphrase': '',
+                'privprotocol': 'garbage', 'privpassphrase': ''},
             'garbage'
         )
     ]
 
-    @pytest.mark.parametrize('input', snmp_v3_missing_or_invalid_parameters_test_cases)
-    def test_snmp_v3_missing_or_invalid_parameters(self, input, fixture_apiversion, fixture_connection, fixture_hostmodule):
+    @pytest.mark.parametrize(
+        'input',
+        snmp_v3_missing_or_invalid_parameters_test_cases)
+    def test_snmp_v3_missing_or_invalid_parameters(
+            self, input, fixture_apiversion, fixture_connection,
+            fixture_hostmodule):
         """
        Testing details of SNMP version 3 interfaces.
         Test cases:
@@ -2885,7 +3019,8 @@ class TestInterfaces_pytest(object):
         2. Interface version 3 security level is invalid (garbage).
 
         SNMPv3 (authNoPriv):
-        3. Interface version 3 authentication protocol is invalid (garbage).
+        3. Interface version 3 authentication protocol is invalid 
+            (garbage).
 
         SNMPv3 (authPriv):
         4. Interface version 3 privacy protocol is invalid (garbage).
@@ -2894,7 +3029,8 @@ class TestInterfaces_pytest(object):
         """
         exist_host = {'host': 'test_host', 'inventory_mode': '1'}
 
-        input_interface = {'type': 'snmp', 'useip': True, 'ip': '127.0.0.1', 'dns': 'test_snmp.com', 'port': '161'}
+        input_interface = {'type': 'snmp', 'useip': True, 'ip': '127.0.0.1',
+                           'dns': 'test_snmp.com', 'port': '161'}
         input_interface['details'] = input[0]
 
         input_param = {
@@ -2902,7 +3038,9 @@ class TestInterfaces_pytest(object):
             'interfaces': [input_interface]}
 
         fixture_hostmodule.params = input_param
-        host = self.module.Host(fixture_hostmodule, ZabbixApi(fixture_hostmodule))
+        host = self.module.Host(
+            fixture_hostmodule,
+            ZabbixApi(fixture_hostmodule))
 
         with pytest.raises(KeyError) as key_err:
             host.generate_zabbix_host(exist_host)
@@ -2917,17 +3055,20 @@ class TestInterfaces_pytest(object):
         ),
         (  # test case 2
             {'version': '3', 'bulk': True,
-                'securityname': 'securityname', 'securitylevel': 'noAuthNoPriv'},
+                'securityname': 'securityname',
+                'securitylevel': 'noAuthNoPriv'},
             ['contextname']
         ),
         (  # test case 3
             {'version': '3', 'bulk': None, 'contextname': None,
-                'securityname': 'securityname', 'securitylevel': 'noAuthNoPriv'},
+                'securityname': 'securityname',
+                'securitylevel': 'noAuthNoPriv'},
             ['bulk', 'contextname']
         ),
         (  # test case 4
             {'version': '3', 'bulk': True, 'contextname': 'contextname',
-                'securityname': 'securityname', 'securitylevel': 'authNoPriv',
+                'securityname': 'securityname',
+                'securitylevel': 'authNoPriv',
                 'authprotocol': None, 'authpassphrase': None},
             ['authprotocol']
         ),
@@ -2973,7 +3114,7 @@ class TestInterfaces_pytest(object):
             {'version': '3', 'bulk': True, 'contextname': 'contextname',
              'securityname': 'securityname', 'securitylevel': 'authPriv',
              'authprotocol': 'md5', 'authpassphrase': 'authpassphrase',
-            },
+             },
             ['privprotocol', 'privpassphrase']
         ),
         (  # test case 12
@@ -2981,47 +3122,68 @@ class TestInterfaces_pytest(object):
              'securityname': 'securityname', 'securitylevel': 'authPriv',
              'authprotocol': None, 'authpassphrase': None,
              'privprotocol': None, 'privpassphrase': None},
-            ['authprotocol', 'authpassphrase', 'privprotocol', 'privpassphrase']
+            ['authprotocol', 'authpassphrase',
+             'privprotocol', 'privpassphrase']
         ),
         (  # test case 13
             {'version': '3', 'bulk': True, 'contextname': 'contextname',
              'securityname': 'securityname', 'securitylevel': 'authPriv'},
-            ['authprotocol', 'authpassphrase', 'privprotocol', 'privpassphrase']
+            ['authprotocol', 'authpassphrase',
+             'privprotocol', 'privpassphrase']
         )
     ]
 
-    @pytest.mark.parametrize("input, keys", snmp_v3_req_params_exception_test_cases)
-    def test_snmp_v3_req_params_exception(self, input, keys, fixture_apiversion, fixture_connection, fixture_hostmodule):
+    @pytest.mark.parametrize(
+        'input, keys',
+        snmp_v3_req_params_exception_test_cases)
+    def test_snmp_v3_req_params_exception(
+            self, input, keys, fixture_apiversion,
+            fixture_connection, fixture_hostmodule):
         """        
-        Testing detection of required parameters of SNMP version 3 interfaces.
+        Testing detection of required parameters of SNMP version 3 
+        interfaces.
         Test cases:
 
         SNMPv3 (noAuthNoPriv):
-        1. Interface version 3 security level is None (checks error message).
-        2. Interface version 3 context name is missing (checks error message).
-        3. Interface version 3 without bulk and context name (two parameters, with the list of missing parameters in error).
+        1. Interface version 3 security level is None (checks error 
+            message).
+        2. Interface version 3 context name is missing (checks error 
+            message).
+        3. Interface version 3 without bulk and context name (two 
+            parameters, with the list of missing parameters in error).
 
         SNMPv3 (authNoPriv):
-        4. Interface version 3 authentication protocol is None (checks error message).
-        5. Interface version 3 authentication protocol is missing (checks error message).
-        6. Interface version 3 without authentication protocol and context name (two parameters, with the list of missing parameters in error;
-        check two independent parameters, because authentication protocol depends on security level only).
-        7. Interface version 3 authentication protocol and context name are missing (two parameters, with the list of missing parameters in error;
-        check two independent parameters, because authentication protocol depends on security level only).
+        4. Interface version 3 authentication protocol is None (checks 
+            error message).
+        5. Interface version 3 authentication protocol is missing 
+            (checks error message).
+        6. Interface version 3 without authentication protocol and 
+            context name (two parameters, with the list of missing 
+            parameters in error; check two independent parameters, 
+            because authentication protocol depends on security level 
+            only).
+        7. Interface version 3 authentication protocol and context name 
+            are missing (two parameters, with the list of missing 
+            parameters in error; check two independent parameters, 
+            because authentication protocol depends on security level 
+            only).
 
         SNMPv3 (authPriv):
         8. Interface version 3 authentication parameters set to None.
         9. Interface version 3 authentication parameters missing.
         10. Interface version 3 privacy parameters set to None.
         11. Interface version 3 privacy parameters missing.
-        12. Interface version 3 authentication and privacy parameters set to None.
-        13. Interface version 3 authentication and privacy parameters missing.
+        12. Interface version 3 authentication and privacy parameters 
+            set to None.
+        13. Interface version 3 authentication and privacy parameters 
+            missing.
 
         Expected result: all test cases raise exception.
         """
         exist_host = {'host': 'test_host', 'inventory_mode': '1'}
 
-        input_interface = {'type': 'snmp', 'useip': True, 'ip': '127.0.0.1', 'dns': 'test_snmp.com', 'port': '161'}
+        input_interface = {'type': 'snmp', 'useip': True, 'ip': '127.0.0.1',
+                           'dns': 'test_snmp.com', 'port': '161'}
         input_interface['details'] = input
 
         input_param = {
@@ -3029,9 +3191,13 @@ class TestInterfaces_pytest(object):
             'interfaces': [input_interface]}
 
         fixture_hostmodule.params = input_param
-        host = self.module.Host(fixture_hostmodule, ZabbixApi(fixture_hostmodule))
+        host = self.module.Host(
+            fixture_hostmodule,
+            ZabbixApi(fixture_hostmodule))
 
-        with pytest.raises(AnsibleFailJson, match="Required parameter not found") as ansible_result:
+        with pytest.raises(
+                AnsibleFailJson,
+                match="Required parameter not found") as ansible_result:
             host.generate_zabbix_host(exist_host)
         assert ansible_result.value.args[0]['failed']
         for parameter in keys:
@@ -3044,8 +3210,9 @@ class TestInterfaces_pytest(object):
             ['max_repetitions']
         ),
         (  # Test case 2
-            {'version': '3', 'bulk': True, 'max_repetitions': None, 'contextname': 'contextname',
-             'securityname': 'securityname', 'securitylevel': 'noAuthNoPriv'},
+            {'version': '3', 'bulk': True, 'max_repetitions': None,
+             'contextname': 'contextname', 'securityname': 'securityname',
+             'securitylevel': 'noAuthNoPriv'},
             ['max_repetitions']
         ),
         (  # Test case 3
@@ -3056,8 +3223,9 @@ class TestInterfaces_pytest(object):
             ['max_repetitions']
         ),
         (  # Test case 4
-            {'version': '3', 'bulk': True, 'max_repetitions': None, 'contextname': 'contextname',
-             'securityname': 'securityname', 'securitylevel': 'authNoPriv',
+            {'version': '3', 'bulk': True, 'max_repetitions': None,
+             'contextname': 'contextname', 'securityname': 'securityname',
+             'securitylevel': 'authNoPriv',
              'authprotocol': 'md5', 'authpassphrase': 'authpassphrase',
              },
             ['max_repetitions']
@@ -3070,19 +3238,24 @@ class TestInterfaces_pytest(object):
             ['max_repetitions']
         ),
         (  # Test case 6
-            {'version': '3', 'bulk': True, 'max_repetitions': None, 'contextname': 'contextname',
-             'securityname': 'securityname', 'securitylevel': 'authPriv',
+            {'version': '3', 'bulk': True, 'max_repetitions': None,
+             'contextname': 'contextname', 'securityname': 'securityname',
+             'securitylevel': 'authPriv',
              'authprotocol': 'md5', 'authpassphrase': 'authpassphrase',
              'privprotocol': 'des', 'privpassphrase': 'privpassphrase'},
             ['max_repetitions']
         )
     ]
 
-    @pytest.mark.parametrize("input, keys", snmp_v3_64_req_params_exception_test_cases)
-    def test_snmp_v3_64_req_params_exception(self, input, keys, fixture_apiversion_64, fixture_connection, fixture_hostmodule):
+    @pytest.mark.parametrize(
+        'input, keys',
+        snmp_v3_64_req_params_exception_test_cases)
+    def test_snmp_v3_64_req_params_exception(
+            self, input, keys, fixture_apiversion_64,
+            fixture_connection, fixture_hostmodule):
         """
-        Testing SNMP version 3 for Zabbix version above 6.4. In this case,
-        the 'max_repetitions' field is required.
+        Testing SNMP version 3 for Zabbix version above 6.4. In this 
+        case, the 'max_repetitions' field is required.
         Test cases:
 
         SNMPv3 (noAuthNoPriv):
@@ -3101,7 +3274,8 @@ class TestInterfaces_pytest(object):
         """
         exist_host = {'host': 'test_host', 'inventory_mode': '1'}
 
-        input_interface = {'type': 'snmp', 'useip': True, 'ip': '127.0.0.1', 'dns': 'test_snmp.com', 'port': '161'}
+        input_interface = {'type': 'snmp', 'useip': True, 'ip': '127.0.0.1',
+                           'dns': 'test_snmp.com', 'port': '161'}
         input_interface['details'] = input
 
         input_param = {
@@ -3109,9 +3283,13 @@ class TestInterfaces_pytest(object):
             'interfaces': [input_interface]}
 
         fixture_hostmodule.params = input_param
-        host = self.module.Host(fixture_hostmodule, ZabbixApi(fixture_hostmodule))
+        host = self.module.Host(
+            fixture_hostmodule,
+            ZabbixApi(fixture_hostmodule))
 
-        with pytest.raises(AnsibleFailJson, match="Required parameter not found") as ansible_result:
+        with pytest.raises(
+                AnsibleFailJson,
+                match="Required parameter not found") as ansible_result:
             host.generate_zabbix_host(exist_host)
         assert ansible_result.value.args[0]['failed']
         for parameter in keys:
@@ -3119,20 +3297,25 @@ class TestInterfaces_pytest(object):
 
     snmp_v3_incorrect_args_exception_test_cases = [
         (  # test case 1
-            {'version': '3', 'bulk': True, 'community': '111', 'contextname': 'contextname',
-             'securityname': None, 'securitylevel': 'noAuthNoPriv', 'authprotocol': None, 'authpassphrase': None,
+            {'version': '3', 'bulk': True, 'community': '111',
+             'contextname': 'contextname', 'securityname': None,
+             'securitylevel': 'noAuthNoPriv',
+             'authprotocol': None, 'authpassphrase': None,
              'privprotocol': None, 'privpassphrase': None},
             ['community']
         ),
         (  # test case 2
-            {'version': '3', 'bulk': True, 'community': '111', 'contextname': None,
-             'securityname': None, 'securitylevel': 'noAuthNoPriv', 'authprotocol': None, 'authpassphrase': None,
+            {'version': '3', 'bulk': True, 'community': '111',
+             'contextname': None, 'securityname': None,
+             'securitylevel': 'noAuthNoPriv',
+             'authprotocol': None, 'authpassphrase': None,
              'privprotocol': None, 'privpassphrase': None},
             ['community']
         ),
         (  # test case 3
-            {'version': '3', 'bulk': True, 'community': '111', 'contextname': 'contextname',
-             'securityname': 'securityname', 'securitylevel': 'authNoPriv',
+            {'version': '3', 'bulk': True, 'community': '111',
+             'contextname': 'contextname', 'securityname': 'securityname',
+             'securitylevel': 'authNoPriv',
              'authprotocol': 'md5', 'authpassphrase': 'authpassphrase'},
             ['community']
         ),
@@ -3145,49 +3328,63 @@ class TestInterfaces_pytest(object):
         ),
         (  # test case 5
             {'version': '3', 'bulk': True, 'contextname': 'contextname',
-             'securityname': 'securityname', 'securitylevel': 'authNoPriv', 'authprotocol': None, 'authpassphrase': None,
+             'securityname': 'securityname', 'securitylevel': 'authNoPriv',
+             'authprotocol': None, 'authpassphrase': None,
              'privprotocol': 'des', 'privpassphrase': 'privpassphrase'},
             ['privprotocol', 'privpassphrase']
         ),
         (  # test case 6
-            {'version': '3', 'bulk': True, 'community': 'test', 'contextname': 'contextname',
-             'securityname': 'securityname', 'securitylevel': 'authPriv',
+            {'version': '3', 'bulk': True, 'community': 'test',
+             'contextname': 'contextname', 'securityname': 'securityname',
+             'securitylevel': 'authPriv',
              'authprotocol': 'md5', 'authpassphrase': 'authpassphrase',
              'privprotocol': 'des', 'privpassphrase': 'privpassphrase'},
             ['community']
         ),
         (  # test case 7
-            {'version': '3', 'bulk': True, 'community': 'test', 'contextname': 'contextname',
-             'securityname': 'securityname', 'securitylevel': 'authPriv', 'authprotocol': None, 'authpassphrase': None,
+            {'version': '3', 'bulk': True, 'community': 'test',
+             'contextname': 'contextname', 'securityname': 'securityname',
+             'securitylevel': 'authPriv',
+             'authprotocol': None, 'authpassphrase': None,
              'privprotocol': None, 'privpassphrase': None},
             ['community']
         )
     ]
 
-    @pytest.mark.parametrize('input, keys', snmp_v3_incorrect_args_exception_test_cases)
-    def test_snmp_v3_incorrect_args_exception(self, input, keys, fixture_apiversion, fixture_connection, fixture_hostmodule):
+    @pytest.mark.parametrize(
+            'input, keys', 
+            snmp_v3_incorrect_args_exception_test_cases)
+    def test_snmp_v3_incorrect_args_exception(
+        self, input, keys, fixture_apiversion, 
+        fixture_connection, fixture_hostmodule):
         """
         Testing of disallowed parameters for SNMP version 3 interfaces.
         Test cases:
 
         SNMPv3 (noAuthNoPriv):       
-        1. Interface version 3 with additional parameter from SNMPv1 (community).
-        2. Interface version 3 with additional parameter (community) from SNMPv1 and SNMPv3 parameter set to None (context name).
+        1. Interface version 3 with additional parameter from SNMPv1 
+            (community).
+        2. Interface version 3 with additional parameter (community) 
+            from SNMPv1 and SNMPv3 parameter set to None (context name).
 
         SNMPv3 (authNoPriv):      
-        3. Interface version 3 with additional parameter from SNMPv1 (community).
+        3. Interface version 3 with additional parameter from SNMPv1 
+            (community).
         4. Interface version 3 with privacy parameters for 'authPriv'.
-        5. Interface version 3 without authentication parameters, but with privacy parameters.
+        5. Interface version 3 without authentication parameters, but 
+            with privacy parameters.
 
         SNMPv3 (authPriv):       
         6. Interface version 3 with additional parameter (community).
-        7. Interface version 3 without authentication and privacy parameters and with additional parameter (community).
+        7. Interface version 3 without authentication and privacy 
+            parameters and with additional parameter (community).
 
         Expected result: all test cases run successfully.
         """
         exist_host = {'host': 'test_host', 'inventory_mode': '1'}
 
-        input_interface = {'type': 'snmp', 'useip': True, 'ip': '', 'dns': '', 'port': None}
+        input_interface = {'type': 'snmp', 'useip': True, 'ip': '', 
+                           'dns': '', 'port': None}
         input_interface['details'] = input
 
         input_param = {
@@ -3195,9 +3392,13 @@ class TestInterfaces_pytest(object):
             'interfaces': [input_interface]}
 
         fixture_hostmodule.params = input_param
-        host = self.module.Host(fixture_hostmodule, ZabbixApi(fixture_hostmodule))
+        host = self.module.Host(
+            fixture_hostmodule,
+            ZabbixApi(fixture_hostmodule))
 
-        with pytest.raises(AnsibleFailJson, match="Incorrect arguments for") as ansible_result:
+        with pytest.raises(
+            AnsibleFailJson, 
+            match="Incorrect arguments for") as ansible_result:
             host.generate_zabbix_host(exist_host)
         assert ansible_result.value.args[0]['failed']
         for parameter in keys:
