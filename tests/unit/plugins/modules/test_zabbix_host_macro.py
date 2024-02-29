@@ -11,6 +11,7 @@ __metaclass__ = type
 from ansible_collections.zabbix.zabbix.plugins.modules import zabbix_host
 from ansible_collections.zabbix.zabbix.tests.unit.plugins.modules.common import (
     AnsibleFailJson, TestModules, patch)
+from ansible_collections.zabbix.zabbix.plugins.module_utils.zabbix_api import (ZabbixApi)
 
 
 def mock_api_version(self):
@@ -39,7 +40,7 @@ class TestMacro(TestModules):
         with patch.multiple(
                 self.zabbix_api_module_path,
                 api_version=mock_api_version):
-            host = self.module.Host(self.mock_module_functions)
+            host = self.module.Host(self.mock_module_functions, ZabbixApi(self.mock_module_functions))
             for each in test_cases:
                 result = host.check_macro_name(each)
                 self.assertEqual(result, '{$TEST}')
@@ -55,6 +56,6 @@ class TestMacro(TestModules):
         with patch.multiple(
                 self.zabbix_api_module_path,
                 api_version=mock_api_version):
-            host = self.module.Host(self.mock_module_functions)
+            host = self.module.Host(self.mock_module_functions, ZabbixApi(self.mock_module_functions))
             with self.assertRaises(AnsibleFailJson):
                 host.check_macro_name('test test')

@@ -11,6 +11,7 @@ __metaclass__ = type
 from ansible_collections.zabbix.zabbix.plugins.modules import zabbix_host
 from ansible_collections.zabbix.zabbix.tests.unit.plugins.modules.common import (
     AnsibleFailJson, TestModules, patch)
+from ansible_collections.zabbix.zabbix.plugins.module_utils.zabbix_api import (ZabbixApi)
 
 
 def mock_api_version(self):
@@ -140,7 +141,7 @@ class TestWOProcessing(TestModules):
                 api_version=mock_api_version):
 
             for case in test_cases:
-                host = self.module.Host(self.mock_module_functions)
+                host = self.module.Host(self.mock_module_functions, ZabbixApi(self.mock_module_functions))
 
                 result = host.compare_zabbix_host(
                     case['exist'], case['new'])
@@ -235,7 +236,7 @@ class TestGroups(TestModules):
                 api_version=mock_api_version):
 
             for case in test_cases:
-                host = self.module.Host(self.mock_module_functions)
+                host = self.module.Host(self.mock_module_functions, ZabbixApi(self.mock_module_functions))
 
                 result = host.compare_zabbix_host(
                     case['exist'], case['new'])
@@ -295,7 +296,7 @@ class TestTemplates(TestModules):
                 api_version=mock_api_version):
 
             for case in test_cases:
-                host = self.module.Host(self.mock_module_functions)
+                host = self.module.Host(self.mock_module_functions, ZabbixApi(self.mock_module_functions))
 
                 result = host.compare_zabbix_host(
                     case['exist'], case['new'])
@@ -375,7 +376,7 @@ class TestTemplates(TestModules):
                 api_version=mock_api_version):
 
             for case in test_cases:
-                host = self.module.Host(self.mock_module_functions)
+                host = self.module.Host(self.mock_module_functions, ZabbixApi(self.mock_module_functions))
 
                 result = host.compare_zabbix_host(
                     case['exist'], case['new'])
@@ -442,7 +443,7 @@ class TestVisibleName(TestModules):
                 api_version=mock_api_version):
 
             for case in test_cases:
-                host = self.module.Host(self.mock_module_functions)
+                host = self.module.Host(self.mock_module_functions, ZabbixApi(self.mock_module_functions))
 
                 result = host.compare_zabbix_host(
                     case['exist'], case['new'])
@@ -545,7 +546,7 @@ class TestTags(TestModules):
                 api_version=mock_api_version):
 
             for case in test_cases:
-                host = self.module.Host(self.mock_module_functions)
+                host = self.module.Host(self.mock_module_functions, ZabbixApi(self.mock_module_functions))
 
                 result = host.compare_zabbix_host(
                     case['exist'], case['new'])
@@ -605,7 +606,7 @@ class TestTags(TestModules):
                 api_version=mock_api_version):
 
             for case in test_cases:
-                host = self.module.Host(self.mock_module_functions)
+                host = self.module.Host(self.mock_module_functions, ZabbixApi(self.mock_module_functions))
 
                 result = host.compare_zabbix_host(
                     case['exist'], case['new'])
@@ -775,7 +776,7 @@ class TestMacros(TestModules):
                 api_version=mock_api_version):
 
             for case in test_cases:
-                host = self.module.Host(self.mock_module_functions)
+                host = self.module.Host(self.mock_module_functions, ZabbixApi(self.mock_module_functions))
 
                 result = host.compare_zabbix_host(
                     case['exist'], case['new'])
@@ -916,7 +917,7 @@ class TestMacros(TestModules):
                 api_version=mock_api_version):
 
             for case in test_cases:
-                host = self.module.Host(self.mock_module_functions)
+                host = self.module.Host(self.mock_module_functions, ZabbixApi(self.mock_module_functions))
 
                 result = host.compare_zabbix_host(
                     case['exist'], case['new'])
@@ -972,7 +973,7 @@ class TestInterfaces(TestModules):
                 api_version=mock_api_version):
 
             for case in test_cases:
-                host = self.module.Host(self.mock_module_functions)
+                host = self.module.Host(self.mock_module_functions, ZabbixApi(self.mock_module_functions))
 
                 result = host.compare_zabbix_host(
                     case['exist'], case['new'])
@@ -1050,7 +1051,7 @@ class TestInterfaces(TestModules):
                 api_version=mock_api_version):
 
             for case in test_cases:
-                host = self.module.Host(self.mock_module_functions)
+                host = self.module.Host(self.mock_module_functions, ZabbixApi(self.mock_module_functions))
 
                 with self.assertRaises(AnsibleFailJson) as ansible_result:
                     host.compare_zabbix_host(
@@ -1209,7 +1210,7 @@ class TestInterfaces(TestModules):
                 api_version=mock_api_version):
 
             for case in test_cases:
-                host = self.module.Host(self.mock_module_functions)
+                host = self.module.Host(self.mock_module_functions, ZabbixApi(self.mock_module_functions))
 
                 result = host.compare_zabbix_host(
                     case['exist'], case['new'])
@@ -1438,7 +1439,7 @@ class TestInterfaces(TestModules):
                 api_version=mock_api_version):
 
             for case in test_cases:
-                host = self.module.Host(self.mock_module_functions)
+                host = self.module.Host(self.mock_module_functions, ZabbixApi(self.mock_module_functions))
 
                 result = host.compare_zabbix_host(
                     case['exist'], case['new'])

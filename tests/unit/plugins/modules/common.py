@@ -64,6 +64,14 @@ class TestModules(unittest.TestCase):
         self.connection = self.mock_connection.start()
         self.addCleanup(self.mock_connection.stop)
 
+        # Mock module for testing module
+        self.mock_module = patch.multiple(
+            basic.AnsibleModule,
+            exit_json=exit_json,
+            fail_json=fail_json)
+        self.mock_module.start()
+        self.addCleanup(self.mock_module.stop)
+
         self.zabbix_api_module_path = "ansible_collections.zabbix.zabbix.plugins.module_utils.zabbix_api.ZabbixApi"
 
         # Mock module for testing functions

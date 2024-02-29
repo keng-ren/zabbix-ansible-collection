@@ -11,6 +11,7 @@ __metaclass__ = type
 from ansible_collections.zabbix.zabbix.plugins.modules import zabbix_host
 from ansible_collections.zabbix.zabbix.tests.unit.plugins.modules.common import (
     AnsibleFailJson, TestModules, patch)
+from ansible_collections.zabbix.zabbix.plugins.module_utils.zabbix_api import (ZabbixApi)
 
 
 def mock_api_version(self):
@@ -53,7 +54,7 @@ class TestGetZabbixHost(TestModules):
 
             # Check simple get host data
             self.mock_module_functions.params = {}
-            host = self.module.Host(self.mock_module_functions)
+            host = self.module.Host(self.mock_module_functions, ZabbixApi(self.mock_module_functions))
 
             result = host.get_zabbix_host('10582')
             self.assertEqual(result.get('items'), None)
@@ -61,7 +62,7 @@ class TestGetZabbixHost(TestModules):
 
             # Check get host data with empty inventory
             self.mock_module_functions.params = {'inventory': True}
-            host = self.module.Host(self.mock_module_functions)
+            host = self.module.Host(self.mock_module_functions, ZabbixApi(self.mock_module_functions))
 
             result = host.get_zabbix_host('10582')
             self.assertNotEqual(result.get('items'), None)
@@ -97,7 +98,7 @@ class TestGetZabbixHost(TestModules):
                 send_api_request=mock_send_request):
 
             self.mock_module_functions.params = {'inventory': True}
-            host = self.module.Host(self.mock_module_functions)
+            host = self.module.Host(self.mock_module_functions, ZabbixApi(self.mock_module_functions))
 
             result = host.get_zabbix_host('10582')
             self.assertEqual(
@@ -123,7 +124,7 @@ class TestGetZabbixHost(TestModules):
                 api_version=mock_api_version,
                 send_api_request=mock_send_request):
 
-            host = self.module.Host(self.mock_module_functions)
+            host = self.module.Host(self.mock_module_functions, ZabbixApi(self.mock_module_functions))
 
             with self.assertRaises(AnsibleFailJson) as ansible_result:
                 host.get_zabbix_host('10582')
