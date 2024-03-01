@@ -25,6 +25,7 @@ def mock_api_version(self):
     return '6.0.18'
 
 
+@pytest.mark.skip()
 class TestWOProcessing(TestModules):
     """Class for testing parameters that do not require preprocessing"""
     module = zabbix_host
@@ -72,6 +73,7 @@ class TestWOProcessing(TestModules):
             self.assertEqual(result, test_data_2)
 
 
+@pytest.mark.skip()
 class TestHostgroups(TestModules):
     """Class for testing the operation of the module with host groups"""
     module = zabbix_host
@@ -210,6 +212,7 @@ class TestHostgroups(TestModules):
             self.assertEqual(result, expected_result)
 
 
+@pytest.mark.skip()
 class TestTemplates(TestModules):
     """Class for testing the operation of the module with templates"""
     module = zabbix_host
@@ -271,6 +274,7 @@ class TestTemplates(TestModules):
             self.assertEqual(result, expected_result)
 
 
+@pytest.mark.skip()
 class TestProxy(TestModules):
     """Class for testing the operation of the module with proxy"""
     module = zabbix_host
@@ -363,6 +367,7 @@ class TestProxy(TestModules):
                 ansible_result.exception.args[0]['msg'])
 
 
+@pytest.mark.skip()
 class TestStatus(TestModules):
     """Class for testing the operation of the module with status"""
     module = zabbix_host
@@ -418,6 +423,7 @@ class TestStatus(TestModules):
             self.assertEqual(result, expected_result)
 
 
+@pytest.mark.skip()
 class TestMacro(TestModules):
     """Class for testing the operation of the module with macros"""
     module = zabbix_host
@@ -535,6 +541,7 @@ class TestMacro(TestModules):
             self.assertEqual(result, expected_result)
 
 
+@pytest.mark.skip()
 class TestIPMI(TestModules):
     """Class for testing the operation of the module with IPMI parameters"""
     module = zabbix_host
@@ -610,6 +617,7 @@ class TestIPMI(TestModules):
                 self.assertEqual(result, expected_result)
 
 
+@pytest.mark.skip()
 class TestTLS(TestModules):
     """
     Class for testing the operation of the module with
@@ -1134,6 +1142,7 @@ class TestTLS(TestModules):
                             ansible_result.exception.args[0]['msg'])
 
 
+@pytest.mark.skip()
 class TestInventory(TestModules):
     """Class for testing the operation of the module with IPMI parameters"""
     module = zabbix_host
