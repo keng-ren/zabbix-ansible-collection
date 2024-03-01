@@ -15,8 +15,8 @@ def fixture_connection(mocker):
 
 @pytest.fixture
 def fixture_hostmodule(mocker):
-    mock_module_functions = mocker.Mock()
-    mock_module_functions._socket_path.return_value = '/dev/null'
+    mock_module_functions = mocker.MagicMock()
+    mock_module_functions._socket_path = '/dev/null'
     mock_module_functions.fail_json = fail_json
     mock_module_functions.exit_json = exit_json
     yield mock_module_functions
